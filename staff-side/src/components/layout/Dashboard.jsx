@@ -21,8 +21,8 @@ export default function LaundryDashboard() {
       accent: "bg-sky-100 text-sky-700"
     },
     {
-      label: "Payment status",
-      value: "Pay",
+      label: "Pending Payment",
+      value: "2 bags",
       action: "Pay now",
       icon: CreditCard,
       accent: "bg-emerald-100 text-emerald-700",
@@ -30,7 +30,7 @@ export default function LaundryDashboard() {
     },
     {
       label: "Pending",
-      value: "2 bag",
+      value: "2 bags",
       action: "View details",
       icon: Truck,
       accent: "bg-indigo-100 text-indigo-700",
