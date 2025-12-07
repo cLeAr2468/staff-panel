@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CustomerHeader from "./CustomerHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ const statusStyles = {
 };
 
 export default function PendingRecords() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredRecords = useMemo(() => {
@@ -71,7 +73,12 @@ export default function PendingRecords() {
                 <h1 className="text-xl font-semibold text-gray-900">Pending records</h1>
                 <p className="text-sm text-gray-500">Monitor wash cycles across stations.</p>
               </div>
-              <Button className="bg-sky-600 hover:bg-sky-700 self-stretch md:self-auto">Insert record</Button>
+              <Button 
+                className="bg-sky-600 hover:bg-sky-700 self-stretch md:self-auto"
+                onClick={() => navigate('/dashboard/insert-record')}
+              >
+                Insert record
+              </Button>
             </div>
 
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
