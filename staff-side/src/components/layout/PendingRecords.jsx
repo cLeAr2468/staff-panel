@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import CustomerLaundryInfo from "./CustomerLaundryInfo";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ListChecks, Eye } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const pendingRecords = [
   {
@@ -14,45 +19,40 @@ const pendingRecords = [
     customer: "Alexa Cruz",
     service: "Wash + Fold",
     weight: "7 kg",
-    status: "Sorting",
-    received: "Today · 10:15 AM",
-    due: "Today · 6:00 PM"
+    status: "Pending",
+
   },
   {
     id: "25-0013",
     customer: "Miguel Santos",
     service: "Premium Hand Wash",
     weight: "5 kg",
-    status: "Pre-wash",
-    received: "Today · 9:40 AM",
-    due: "Tomorrow · 9:00 AM"
+    status: "Pending",
+
   },
   {
     id: "25-0011",
     customer: "James Patterson",
     service: "Express Wash",
     weight: "3 kg",
-    status: "Drying",
-    received: "Today · 8:30 AM",
-    due: "Today · 2:15 PM"
+    status: "Pending",
+
   },
   {
     id: "25-0009",
     customer: "Maria Garcia",
     service: "Dry Cleaning",
     weight: "2 kg",
-    status: "Pre-wash",
-    received: "Yesterday · 3:00 PM",
-    due: "Tomorrow · 10:00 AM"
+    status: "Pending",
+
   },
   {
     id: "25-0007",
     customer: "Rina Lopez",
     service: "Express Wash",
     weight: "4 kg",
-    status: "Drying",
-    received: "Yesterday · 4:25 PM",
-    due: "Today · 1:30 PM"
+    status: "Pending",
+
   }
 ];
 
@@ -78,8 +78,8 @@ export default function PendingRecords() {
       bedSheets: Math.floor(Math.random() * 2),
     };
     // Navigate to the CustomerLaundryInfo page with the record data
-    navigate('/dashboard/Laundryinfo', { 
-      state: { record: { ...record, formData } } 
+    navigate('/dashboard/Laundryinfo', {
+      state: { record: { ...record, formData } }
     });
   };
 
@@ -138,7 +138,7 @@ export default function PendingRecords() {
                 <h1 className="text-xl font-semibold text-gray-900">Pending records</h1>
                 <p className="text-sm text-gray-500">Monitor wash cycles across stations.</p>
               </div>
-              <Button 
+              <Button
                 className="bg-sky-600 hover:bg-sky-700 self-stretch md:self-auto"
                 onClick={() => navigate('/dashboard/insert-record')}
               >
@@ -169,8 +169,6 @@ export default function PendingRecords() {
                     <th className="py-3">Service</th>
                     <th className="py-3">Weight</th>
                     <th className="py-3">Status</th>
-                    <th className="py-3">Received</th>
-                    <th className="py-3">Due</th>
                     <th className="py-3 text-right">Action</th>
                   </tr>
                 </thead>
@@ -182,16 +180,25 @@ export default function PendingRecords() {
                       <td className="py-4">{record.service}</td>
                       <td className="py-4">{record.weight}</td>
                       <td className="py-4">
-                        <Badge className={`${statusStyles[record.status]} font-medium`}>
+                        <Badge className={`${statusStyles[record.status]} font-medium bg-white text-orange-500`}>
                           {record.status}
                         </Badge>
                       </td>
-                      <td className="py-4">{record.received}</td>
-                      <td className="py-4">{record.due}</td>
-                      <td className="py-4 text-right">
-                        <Button onClick={() => handleViewRecord(record)} variant="outline" size="sm" className="border-slate-200 text-slate-600">
-                          View
-                        </Button>
+                      <td className="py-2 text-right space-x-4">
+                        <Tooltip>
+                          <TooltipTrigger><ListChecks onClick={() => handleViewRecord(record)} className="cursor-pointer text-sm">
+                          </ListChecks></TooltipTrigger>
+                          <TooltipContent>
+                            Process
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger><Eye onClick={() => handleViewRecord(record)} variant="outline" className="cursor-pointer text-sm">
+                          </Eye></TooltipTrigger>
+                          <TooltipContent>
+                            View
+                          </TooltipContent>
+                        </Tooltip>
                       </td>
                     </tr>
                   ))}
@@ -207,26 +214,27 @@ export default function PendingRecords() {
                       <p className="text-xs uppercase tracking-wide text-gray-400">Laundry ID</p>
                       <p className="text-lg font-semibold text-gray-900">{record.id}</p>
                     </div>
-                    <Badge className={`${statusStyles[record.status]} font-medium`}>
-                      {record.status}
-                    </Badge>
+                        <Badge className={`${statusStyles[record.status]} font-medium bg-white text-orange-500`}>
+                          {record.status}
+                        </Badge>
                   </div>
                   <p className="mt-1 text-sm text-gray-900">{record.customer}</p>
                   <p className="text-sm text-gray-500">
                     {record.service} · {record.weight}
                   </p>
-                  <div className="mt-3 space-y-1 text-sm text-gray-500">
-                    <p>Received: {record.received}</p>
-                    <p>Due: {record.due}</p>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <Button className="mt-3 w-full bg-sky-600 hover:bg-sky-700 self-stretch md:self-auto">
+                      Process
+                    </Button>
+                    <Button
+                      onClick={() => handleViewRecord(record)}
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 w-full border-slate-200 text-slate-600"
+                    >
+                      View record
+                    </Button>
                   </div>
-                  <Button
-                    onClick={() => handleViewRecord(record)}
-                    variant="outline"
-                    size="sm"
-                    className="mt-3 w-full border-slate-200 text-slate-600"
-                  >
-                    View record
-                  </Button>
                 </div>
               ))}
             </div>
