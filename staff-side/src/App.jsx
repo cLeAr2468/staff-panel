@@ -13,6 +13,7 @@ import Profile from './components/layout/Profile';
 import History from './components/layout/History';
 import PendingRecords from './components/layout/PendingRecords';
 import InsertRecord from './components/layout/InsertRecord';
+import CustomerLaundryInfo from './components/layout/CustomerLaundryInfo';
 
 function AppContent() {
   const location = useLocation();
@@ -42,6 +43,7 @@ function AppContent() {
         <Route path="/dashboard/insert-record" element={<InsertRecord />} />
         <Route path="/dashboard/profile" element={<Profile />} />
         <Route path="/dashboard/history" element={<History />} />
+        <Route path="/dashboard/Laundryinfo" element={<CustomerLaundryInfo />} />
       </Routes>
     </div>
   );
