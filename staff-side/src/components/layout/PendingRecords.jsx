@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import CustomerLaundryInfo from "./CustomerLaundryInfo";
+import { ChevronLeft } from "lucide-react";
 
 const pendingRecords = [
   {
@@ -27,6 +29,24 @@ const pendingRecords = [
   },
   {
     id: "25-0011",
+    customer: "James Patterson",
+    service: "Express Wash",
+    weight: "3 kg",
+    status: "Drying",
+    received: "Today · 8:30 AM",
+    due: "Today · 2:15 PM"
+  },
+  {
+    id: "25-0009",
+    customer: "Maria Garcia",
+    service: "Dry Cleaning",
+    weight: "2 kg",
+    status: "Pre-wash",
+    received: "Yesterday · 3:00 PM",
+    due: "Tomorrow · 10:00 AM"
+  },
+  {
+    id: "25-0007",
     customer: "Rina Lopez",
     service: "Express Wash",
     weight: "4 kg",
@@ -45,6 +65,51 @@ const statusStyles = {
 export default function PendingRecords() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRecord, setSelectedRecord] = useState(null);
+
+  const handleViewRecord = (record) => {
+    const formData = {
+      shirts: Math.floor(Math.random() * 5),
+      pants: Math.floor(Math.random() * 3),
+      jeans: Math.floor(Math.random() * 2),
+      shorts: Math.floor(Math.random() * 2),
+      towel: Math.floor(Math.random() * 4),
+      pillowCase: Math.floor(Math.random() * 3),
+      bedSheets: Math.floor(Math.random() * 2),
+    };
+    // Navigate to the CustomerLaundryInfo page with the record data
+    navigate('/dashboard/Laundryinfo', { 
+      state: { record: { ...record, formData } } 
+    });
+  };
+
+  if (selectedRecord) {
+    return (
+      <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl space-y-6">
+          <CustomerHeader />
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => setSelectedRecord(null)}>
+            <ChevronLeft className="h-4 w-4" />
+            Back to Records
+          </Button>
+          <Card className="shadow-sm">
+            <CardContent className="p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">Laundry Record Details</h2>
+                <p className="text-sm text-gray-500 mt-2">
+                  <span className="font-medium">ID:</span> {selectedRecord.id} | <span className="font-medium">Customer:</span> {selectedRecord.customer}
+                </p>
+                <p className="text-sm text-gray-500">
+                  <span className="font-medium">Service:</span> {selectedRecord.service} | <span className="font-medium">Weight:</span> {selectedRecord.weight}
+                </p>
+              </div>
+              <CustomerLaundryInfo formData={selectedRecord.formData} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const filteredRecords = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -124,7 +189,7 @@ export default function PendingRecords() {
                       <td className="py-4">{record.received}</td>
                       <td className="py-4">{record.due}</td>
                       <td className="py-4 text-right">
-                        <Button variant="outline" size="sm" className="border-slate-200 text-slate-600">
+                        <Button onClick={() => handleViewRecord(record)} variant="outline" size="sm" className="border-slate-200 text-slate-600">
                           View
                         </Button>
                       </td>
@@ -155,6 +220,7 @@ export default function PendingRecords() {
                     <p>Due: {record.due}</p>
                   </div>
                   <Button
+                    onClick={() => handleViewRecord(record)}
                     variant="outline"
                     size="sm"
                     className="mt-3 w-full border-slate-200 text-slate-600"
