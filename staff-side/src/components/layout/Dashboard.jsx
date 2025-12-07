@@ -23,7 +23,7 @@ export default function LaundryDashboard() {
     {
       label: "Pending Payment",
       value: "2 bags",
-      action: "Pay now",
+      action: "View details",
       icon: CreditCard,
       accent: "bg-emerald-100 text-emerald-700",
       path: "/dashboard/payment"
