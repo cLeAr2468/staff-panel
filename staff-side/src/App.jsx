@@ -12,6 +12,7 @@ import Payment from './components/layout/payment';
 import Profile from './components/layout/Profile';
 import History from './components/layout/History';
 import PendingRecords from './components/layout/PendingRecords';
+import PendingPayments from './components/layout/PendingPayments';
 import InsertRecord from './components/layout/InsertRecord';
 import CustomerLaundryInfo from './components/layout/CustomerLaundryInfo';
 
@@ -40,6 +41,7 @@ function AppContent() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/payment" element={<Payment />} />
         <Route path="/dashboard/pending" element={<PendingRecords />} />
+        <Route path="/dashboard/pending-payments" element={<PendingPayments />} />
         <Route path="/dashboard/insert-record" element={<InsertRecord />} />
         <Route path="/dashboard/profile" element={<Profile />} />
         <Route path="/dashboard/history" element={<History />} />

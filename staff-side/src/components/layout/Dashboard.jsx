@@ -26,7 +26,7 @@ export default function LaundryDashboard() {
       action: "View details",
       icon: CreditCard,
       accent: "bg-emerald-100 text-emerald-700",
-      path: "/dashboard/payment"
+      path: "/dashboard/pending-payments"
     },
     {
       label: "Pending",
