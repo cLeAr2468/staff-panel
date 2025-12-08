@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CustomerHeader from "./CustomerHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Check, X } from "lucide-react";
+import { Pencil, Check, X, ArrowLeft } from "lucide-react";
 
 const defaultProfileDetails = [
   { key: "fullName", label: "Full name", value: "Gabiana Angie" },
@@ -17,6 +18,7 @@ const defaultProfileDetails = [
 ];
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [details, setDetails] = useState(defaultProfileDetails);
   const [draftDetails, setDraftDetails] = useState(defaultProfileDetails);
   const [isEditing, setIsEditing] = useState(false);
@@ -51,6 +53,21 @@ export default function Profile() {
       <div className="mx-auto max-w-4xl space-y-6">
         <CustomerHeader />
 
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/dashboard")}
+            className="h-10 w-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+            <p className="text-sm text-gray-500">Manage your account information</p>
+          </div>
+        </div>
+
         <Card className="shadow-sm">
           <CardContent className="p-6 space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -62,7 +79,7 @@ export default function Profile() {
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                   <Button
                     type="button"
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
+                    className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700"
                     onClick={saveChanges}
                   >
                     <Check className="h-4 w-4" />

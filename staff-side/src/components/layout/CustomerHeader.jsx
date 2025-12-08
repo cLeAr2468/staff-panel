@@ -32,7 +32,7 @@ export default function CustomerHeader({
   };
 
   return (
-    <Card className={`bg-gradient-to-r from-sky-600 via-sky-500 to-sky-400 text-white shadow-xl ${className}`}>
+    <Card className={`bg-[#126280] text-white shadow-xl ${className}`}>
       <CardContent className="p-6 space-y-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between lg:items-start">
           <div className="flex items-center gap-4">

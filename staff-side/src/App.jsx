@@ -15,12 +15,15 @@ import PendingRecords from './components/layout/PendingRecords';
 import PendingPayments from './components/layout/PendingPayments';
 import InsertRecord from './components/layout/InsertRecord';
 import CustomerLaundryInfo from './components/layout/CustomerLaundryInfo';
+import Inventory from './components/layout/Inventory';
+import AddInventoryItem from './components/layout/AddInventoryItem';
+import ReadyForPickup from './components/layout/ReadyForPickup';
 
 function AppContent() {
   const location = useLocation();
 
   const exactHideRoutes = ['/register', '/login'];
-  const prefixHideRoutes = ['/dashboard'];
+  const prefixHideRoutes = ['/dashboard', '/inventory', '/add-inventory-item', '/ready-for-pickup'];
 
   const shouldHideHeader =
     exactHideRoutes.includes(location.pathname) ||
@@ -46,6 +49,9 @@ function AppContent() {
         <Route path="/dashboard/profile" element={<Profile />} />
         <Route path="/dashboard/history" element={<History />} />
         <Route path="/dashboard/Laundryinfo" element={<CustomerLaundryInfo />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/add-inventory-item" element={<AddInventoryItem />} />
+        <Route path="/ready-for-pickup" element={<ReadyForPickup />} />
       </Routes>
     </div>
   );

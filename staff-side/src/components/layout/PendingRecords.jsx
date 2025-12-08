@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import CustomerLaundryInfo from "./CustomerLaundryInfo";
-import { ChevronLeft, ListChecks, Eye } from "lucide-react";
+import { ChevronLeft, ListChecks, Eye, ArrowLeft } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -130,6 +130,21 @@ export default function PendingRecords() {
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-6xl space-y-6">
         <CustomerHeader />
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/dashboard")}
+            className="h-10 w-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Pending Records</h1>
+            <p className="text-sm text-gray-500">Monitor wash cycles</p>
+          </div>
+        </div>
 
         <Card className="shadow-sm">
           <CardContent className="space-y-6 p-6">
