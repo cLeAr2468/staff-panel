@@ -1,16 +1,71 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Star, ShoppingBasket, CreditCard, Truck, Droplets } from "lucide-react"
+import { ShoppingBasket, CreditCard, Truck, Droplets, Clock, CheckCircle, AlertCircle, TrendingUp, BarChart3, Package } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import CustomerHeader from "./CustomerHeader"
 
 export default function LaundryDashboard() {
   const navigate = useNavigate();
-  const [selectedStars, setSelectedStars] = useState(new Set());
-  const [hoveredRating, setHoveredRating] = useState(0);
+  const [expandedLog, setExpandedLog] = useState(null);
+
+  const activityLogs = [
+    {
+      id: 1,
+      orderId: "25-0001",
+      action: "Order Received",
+      timestamp: "Today · 9:30 AM",
+      status: "completed",
+      icon: CheckCircle,
+      details: "Your laundry order has been received and is in queue"
+    },
+    {
+      id: 2,
+      orderId: "25-0001",
+      action: "Processing Started",
+      timestamp: "Today · 10:15 AM",
+      status: "completed",
+      icon: TrendingUp,
+      details: "Your items are being sorted and prepared for washing"
+    },
+    {
+      id: 3,
+      orderId: "25-0001",
+      action: "Washing in Progress",
+      timestamp: "Today · 11:00 AM",
+      status: "completed",
+      icon: Droplets,
+      details: "Your clothes are being washed with premium detergent"
+    },
+    {
+      id: 4,
+      orderId: "25-0001",
+      action: "Drying",
+      timestamp: "Today · 1:45 PM",
+      status: "active",
+      icon: Clock,
+      details: "Your items are being dried to perfection"
+    },
+    {
+      id: 5,
+      orderId: "25-0004",
+      action: "Quality Check",
+      timestamp: "Today · 2:30 PM",
+      status: "active",
+      icon: AlertCircle,
+      details: "Premium hand wash order under quality inspection"
+    },
+    {
+      id: 6,
+      orderId: "25-0004",
+      action: "Ready for Pick-up",
+      timestamp: "Today · 4:45 PM",
+      status: "pending",
+      icon: CheckCircle,
+      details: "Your order is ready! Please pick up at your earliest convenience"
+    }
+  ];
 
   const quickStats = [
     {
@@ -18,7 +73,8 @@ export default function LaundryDashboard() {
       value: "2 bags",
       action: "View details",
       icon: ShoppingBasket,
-      accent: "bg-sky-100 text-sky-700"
+      accent: "bg-sky-100 text-sky-700",
+      path: "/ready-for-pickup"
     },
     {
       label: "Pending Payment",
@@ -43,6 +99,14 @@ export default function LaundryDashboard() {
       icon: Droplets,
       accent: "bg-amber-100 text-amber-700",
       path: "/dashboard/history"
+    },
+    {
+      label: "Inventory",
+      value: "48 items",
+      action: "View inventory",
+      icon: Package,
+      accent: "bg-purple-100 text-purple-700",
+      path: "/inventory"
     }
   ];
 
@@ -61,33 +125,56 @@ export default function LaundryDashboard() {
     }
   ];
 
-  const handleStarClick = (starNumber) => {
-    setSelectedStars(prev => {
-      const newSelection = new Set();
+  const monthlyTransactions = [
+    { month: "Jan", transactions: 12, amount: 4800 },
+    { month: "Feb", transactions: 15, amount: 6200 },
+    { month: "Mar", transactions: 10, amount: 4100 },
+    { month: "Apr", transactions: 22, amount: 9500 },
+    { month: "May", transactions: 18, amount: 7400 },
+    { month: "Jun", transactions: 25, amount: 10200 },
+    { month: "Jul", transactions: 20, amount: 8300 },
+    { month: "Aug", transactions: 28, amount: 11500 },
+    { month: "Sep", transactions: 24, amount: 9800 },
+    { month: "Oct", transactions: 30, amount: 12400 },
+    { month: "Nov", transactions: 26, amount: 10900 },
+    { month: "Dec", transactions: 32, amount: 13200 }
+  ];
 
-      if (prev.size > 0 && Math.max(...prev) === starNumber) {
-        return newSelection;
-      }
+  const maxAmount = Math.max(...monthlyTransactions.map(item => item.amount));
+  const maxTransactions = Math.max(...monthlyTransactions.map(item => item.transactions));
 
-      for (let i = 1; i <= starNumber; i++) {
-        newSelection.add(i);
-      }
-      return newSelection;
-    });
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "completed":
+        return "text-emerald-600";
+      case "active":
+        return "text-sky-600";
+      case "pending":
+        return "text-amber-600";
+      default:
+        return "text-gray-600";
+    }
   };
 
-  const handleStarHover = (starNumber) => {
-    setHoveredRating(starNumber);
+  const getStatusBgColor = (status) => {
+    switch (status) {
+      case "completed":
+        return "bg-emerald-50";
+      case "active":
+        return "bg-sky-50";
+      case "pending":
+        return "bg-amber-50";
+      default:
+        return "bg-gray-50";
+    }
   };
-
-  const rating = selectedStars.size;
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-6xl space-y-6">
         <CustomerHeader />
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {quickStats.map((stat) => {
             const isInteractive = Boolean(stat.path);
             return (
@@ -124,27 +211,56 @@ export default function LaundryDashboard() {
           <CardContent className="p-6 space-y-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Active orders</h2>
-                <p className="text-sm text-gray-500">Track progress in real-time</p>
+                <h2 className="text-lg font-semibold text-gray-900">Monthly Transactions</h2>
+                <p className="text-sm text-gray-500">Track your laundry service spending this year</p>
               </div>
-              <Input placeholder="Track ID e.g. 25-0001" className="bg-slate-50" />
+              <div className="inline-flex items-center gap-2 text-sm font-medium text-sky-600">
+                <BarChart3 className="h-4 w-4" />
+                Overview
+              </div>
             </div>
 
-            <div className="space-y-4">
-              {activeOrders.map((order) => (
-                <div key={order.id} className="rounded-2xl border border-slate-100 p-4 flex flex-col gap-3 sm:items-center sm:justify-between sm:flex-row bg-white">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-400">Laundry ID</p>
-                    <p className="text-lg font-semibold text-gray-900">{order.id}</p>
-                    <p className="text-sm text-gray-500">{order.items}</p>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <p className="text-sm font-semibold text-sky-600">{order.status}</p>
-                    <p className="text-xs text-gray-500">{order.eta}</p>
-                    <Button size="sm" className="mt-3 bg-sky-600 hover:bg-sky-700 w-full sm:w-auto">View timeline</Button>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <div className="flex gap-2 pb-2 min-w-min">
+                {monthlyTransactions.map((data) => {
+                  const heightPercent = (data.amount / maxAmount) * 100;
+                  
+                  return (
+                    <div key={data.month} className="flex flex-col items-center gap-2 flex-shrink-0">
+                      <div className="flex flex-col items-center gap-1">
+                        <p className="text-xs font-medium text-gray-600 h-5">₱{data.amount}</p>
+                        <div className="relative h-32 sm:h-40 w-10 sm:w-12 bg-slate-100 rounded-lg overflow-hidden flex items-end justify-center">
+                          <div
+                            className="w-full bg-gradient-to-t from-sky-500 to-sky-400 rounded-sm transition-all duration-300 hover:from-sky-600 hover:to-sky-500"
+                            style={{ height: `${heightPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-700">{data.month}</p>
+                      <p className="text-xs text-gray-500">{data.transactions} trans.</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-4 border-t border-slate-200">
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500">Total Spent</p>
+                <p className="text-lg sm:text-xl font-semibold text-gray-900">₱{monthlyTransactions.reduce((sum, m) => sum + m.amount, 0)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500">Avg. Monthly</p>
+                <p className="text-lg sm:text-xl font-semibold text-gray-900">₱{Math.round(monthlyTransactions.reduce((sum, m) => sum + m.amount, 0) / 12)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500">Total Orders</p>
+                <p className="text-lg sm:text-xl font-semibold text-gray-900">{monthlyTransactions.reduce((sum, m) => sum + m.transactions, 0)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500">Highest Month</p>
+                <p className="text-lg sm:text-xl font-semibold text-gray-900">Dec (₱{monthlyTransactions[11].amount})</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -152,43 +268,59 @@ export default function LaundryDashboard() {
         <Card className="shadow-sm">
           <CardContent className="p-6 space-y-4">
             <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-semibold text-gray-900">Rate your last service</h2>
-              <p className="text-sm text-gray-500">Share feedback to unlock extra loyalty points</p>
+              <h2 className="text-lg font-semibold text-gray-900">Activity Log</h2>
+              <p className="text-sm text-gray-500">Track all updates for your laundry orders</p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {[1, 2, 3, 4, 5].map((starNumber) => (
-                <button
-                  key={starNumber}
-                  onClick={() => handleStarClick(starNumber)}
-                  onMouseEnter={() => handleStarHover(starNumber)}
-                  onMouseLeave={() => handleStarHover(0)}
-                  className="rounded-lg border border-slate-200 p-2 transition hover:border-sky-200"
-                >
-                  <Star
-                    className={`h-7 w-7 sm:h-8 sm:w-8 ${
-                      hoveredRating
-                        ? starNumber <= hoveredRating
-                          ? "text-yellow-500 fill-yellow-500"
-                          : "text-slate-300"
-                        : selectedStars.has(starNumber)
-                        ? "text-yellow-500 fill-yellow-500"
-                        : "text-slate-300"
-                    }`}
-                  />
-                </button>
-              ))}
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {activityLogs.map((log, index) => {
+                const IconComponent = log.icon;
+                const isExpanded = expandedLog === log.id;
+                
+                return (
+                  <div
+                    key={log.id}
+                    className={`rounded-lg border border-slate-200 p-4 transition cursor-pointer hover:shadow-sm ${getStatusBgColor(log.status)}`}
+                    onClick={() => setExpandedLog(isExpanded ? null : log.id)}
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex gap-3 flex-1">
+                        <div className="flex-shrink-0">
+                          <IconComponent className={`h-5 w-5 mt-0.5 ${getStatusColor(log.status)}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                              <p className="font-semibold text-gray-900 text-sm sm:text-base">{log.action}</p>
+                              <p className="text-xs sm:text-sm text-gray-500">{log.timestamp}</p>
+                            </div>
+                            <p className="text-xs sm:text-sm text-gray-600">Order ID: <span className="font-medium">{log.orderId}</span></p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 self-start mt-1 sm:mt-0">
+                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                          log.status === "completed" ? "bg-emerald-100 text-emerald-700" :
+                          log.status === "active" ? "bg-sky-100 text-sky-700" :
+                          "bg-amber-100 text-amber-700"
+                        }`}>
+                          {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="mt-3 pt-3 border-t border-slate-300">
+                        <p className="text-sm text-gray-700">{log.details}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            <p className="text-sm text-gray-500">
-              {rating ? `You rated ${rating} star${rating !== 1 ? "s" : ""}. Tell us what we did well or what we can improve.` : "Tap a star to start your review."}
-            </p>
-
-            <Textarea placeholder="Write your comment here..." className="min-h-[120px]" />
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-gray-500">Your review helps us keep your garments fresh and crisp every time.</p>
-              <Button className="bg-sky-600 hover:bg-sky-700" disabled={!rating}>Submit feedback</Button>
+            <div className="pt-2">
+              <Button variant="outline" className="w-full sm:w-auto">View full history</Button>
             </div>
           </CardContent>
         </Card>

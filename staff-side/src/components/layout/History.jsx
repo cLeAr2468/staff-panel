@@ -1,5 +1,8 @@
 import CustomerHeader from "./CustomerHeader";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const monthlySummary = {
   totalBags: 18,
@@ -32,6 +35,7 @@ const historyItems = [
 ];
 
 export default function History() {
+  const navigate = useNavigate();
   const orderedHistory = [...historyItems].sort((a, b) => {
     const parseDate = (entry) => new Date(`${entry.date} ${new Date().getFullYear()}`);
     return parseDate(a) - parseDate(b);
@@ -41,6 +45,21 @@ export default function History() {
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-5xl space-y-6">
         <CustomerHeader />
+        
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/dashboard")}
+            className="h-10 w-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">History</h1>
+            <p className="text-sm text-gray-500">View your past orders</p>
+          </div>
+        </div>
         <Card className="shadow-sm">
           <CardContent className="p-0">
             <div className="divide-y divide-slate-100">

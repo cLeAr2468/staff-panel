@@ -2,13 +2,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ShoppingBasket, CreditCard, FileCheck } from "lucide-react"
+import { ShoppingBasket, CreditCard, FileCheck, ArrowLeft } from "lucide-react"
 import { useRef, useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import CustomerHeader from "./CustomerHeader"
 
 export default function Payment() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { payment, formData = {} } = location.state || {};
 
   const [proofFile, setProofFile] = useState(null);
@@ -47,6 +48,21 @@ export default function Payment() {
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-6xl space-y-6">
         <CustomerHeader />
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="h-10 w-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Payment</h1>
+            <p className="text-sm text-gray-500">Process customer payment</p>
+          </div>
+        </div>
 
         <Card className="shadow-lg">
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6">

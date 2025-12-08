@@ -119,7 +119,7 @@ const CustomerLaundryInfo = () => {
                   </p>
                 )}
               </div>
-              <Button className="bg-sky-600">Process</Button>
+              <Button className="bg-sky-600 hover:bg-sky-700">Process</Button>
             </div>
           </CardContent>
         </Card>
