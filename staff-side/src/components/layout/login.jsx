@@ -1,27 +1,104 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
+import { fetchApi } from "@/lib/api";
+import { AuthContext } from "@/context/AuthContext";
+import { toast } from "sonner";
+
+const DEFAULT_SHOP = {
+    shop_name: 'Wash Wise Intelligence',
+    slug: 'wash-wise-intelligence',
+    shop_id: 'LMSS-00000'
+};
 
 const Login = () => {
-    const [username, setUsername] = useState("admin");
-    const [password, setPassword] = useState("password");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [showForgotModal, setShowForgotModal] = useState(false);
+    const [resetMessage, setResetMessage] = useState("");
+    const [selectedShop, setSelectedShop] = useState(null);
+    const { slug } = useParams();
     const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
+    const [email, setEmail] = useState('');
 
-    const handleLogin = (e) => {
+    useEffect(() => {
+        const verifySlug = async () => {
+            try {
+
+                if (!slug) {
+                    localStorage.removeItem('selectedShop');
+                    localStorage.removeItem('selectedShopId');
+                    setSelectedShop(DEFAULT_SHOP);
+                    return;
+                }
+
+                const response = await fetchApi(`/api/public/shop-slug/${slug}`);
+
+                if (!response.success) {
+                    localStorage.removeItem('selectedShop');
+                    localStorage.removeItem('selectedShopId');
+                    setSelectedShop(DEFAULT_SHOP);
+                    return;
+                }
+
+                localStorage.setItem('selectedShop', response.data.slug);
+                localStorage.setItem('selectedShopId', response.data.shop_id);
+                setSelectedShop(response.data);
+
+            } catch (err) {
+                console.error("Slug check failed:", err);
+                setSelectedShop(DEFAULT_SHOP);
+                localStorage.removeItem('selectedShop');
+                localStorage.removeItem('selectedShopId');
+            }
+        };
+
+        verifySlug();
+    }, [slug]);
+
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
 
-        // Simple hardcoded authentication
-        if (username === "admin" && password === "password") {
-            // Navigate to dashboard on successful login
-            navigate("/dashboard");
-        } else {
-            setError("Invalid username or password. Use admin/password");
+        const shopIdToSend = localStorage.getItem("selectedShopId");
+
+        if (!shopIdToSend) {
+            setError("Invalid shop. Please go back to home page.");
+            return;
+        }
+        try {
+            const response = await fetchApi('/api/public/staff/login', {
+                method: 'POST',
+                body: JSON.stringify({
+                    shop_id: shopIdToSend,
+                    emailOrUsername: username,
+                    password: password
+                })
+            });
+
+            if (!response.message || !response.token) {
+                throw new Error("Invalid response from server");
+            }
+
+            const token = response.token.replace('Bearer ', '');
+            login(response.admin, token, response.apiKey);
+
+            setTimeout(() => {
+                toast.success("Login successfully!");
+                navigate("/dashboard");
+            }, 2000);
+
+        } catch (error) {
+            console.error('Login error:', error);
+            setError(error.message || "Invalid credentials. Please try again.");
         }
     };
+
+    const currentShop = selectedShop || DEFAULT_SHOP;
 
     return (
         <div className="min-h-screen bg-cover bg-center"
@@ -55,7 +132,7 @@ const Login = () => {
                                 </div>
 
                                 <h2 className="text-xl md:text-2xl font-bold text-center">Login</h2>
-                                
+
                                 {error && (
                                     <p className="text-red-500 text-sm text-center font-semibold">
                                         {error}
@@ -91,7 +168,7 @@ const Login = () => {
                                         </a>
                                     </p>
 
-                                    <Button 
+                                    <Button
                                         type="submit"
                                         className="w-full mt-2 md:mt-4 bg-[#126280] hover:bg-[#126280]/80 h-10 md:h-12 text-sm md:text-base text-white"
                                     >
