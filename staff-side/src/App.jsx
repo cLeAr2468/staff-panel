@@ -19,6 +19,7 @@ import Inventory from './components/layout/Inventory';
 import AddInventoryItem from './components/layout/AddInventoryItem';
 import ReadyForPickup from './components/layout/ReadyForPickup';
 import PublicLayout from './components/layout/PublicLayout';
+import { Toaster as SonnerToaster } from "sonner";
 
 function AppContent() {
   const location = useLocation();
@@ -63,6 +64,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <SonnerToaster position="top-right" richColors />
       <AppContent />
     </Router>
   );
