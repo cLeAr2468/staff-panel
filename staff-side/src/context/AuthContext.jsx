@@ -3,17 +3,17 @@ import React, { createContext, useState, useEffect } from "react";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [adminData, setAdminData] = useState(null);
+  const [staffData, setStaffData] = useState(null);
   const [token, setToken] = useState(null);
   const [apiKey, setApiKey] = useState(null);
 
   useEffect(() => {
     try {
-      const storedAdmin = localStorage.getItem("adminData");
+      const storedStaff = localStorage.getItem("staffData");
       const storedToken = localStorage.getItem("token");
       const storedApiKey = localStorage.getItem("apiKey");
 
-      if (storedAdmin) setAdminData(JSON.parse(storedAdmin));
+      if (storedStaff) setStaffData(JSON.parse(storedStaff));
       if (storedToken) setToken(storedToken);
       if (storedApiKey) setApiKey(storedApiKey);
     } catch (error) {
@@ -22,28 +22,28 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (admin, jwtToken, apiKeyValue) => {
-    localStorage.setItem("adminData", JSON.stringify(admin));
+  const login = (staff, jwtToken, apiKeyValue) => {
+    localStorage.setItem("staffData", JSON.stringify(staff));
     localStorage.setItem("token", jwtToken);
     localStorage.setItem("apiKey", apiKeyValue);
 
-    setAdminData(admin);
+    setStaffData(staff);
     setToken(jwtToken);
     setApiKey(apiKeyValue);
   };
 
   const logout = () => {
-    localStorage.removeItem("adminData");
+    localStorage.removeItem("staffData");
     localStorage.removeItem("token");
     localStorage.removeItem("apiKey");
 
-    setAdminData(null);
+    setStaffData(null);
     setToken(null);
     setApiKey(null);
   };
 
   return (
-    <AuthContext.Provider value={{ adminData, token, apiKey, login, logout }}>
+    <AuthContext.Provider value={{ staffData, token, apiKey, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

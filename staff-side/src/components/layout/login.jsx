@@ -25,7 +25,6 @@ const Login = () => {
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
     const [email, setEmail] = useState('');
-    const [loggingIn, setLoggingIn] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
 
     useEffect(() => {
@@ -75,7 +74,6 @@ const Login = () => {
         }
 
         toast.promise(
-            setLoggingIn(true)
                 (async () => {
                     const response = await fetchApi('/api/public/staff/login', {
                         method: 'POST',
@@ -91,7 +89,7 @@ const Login = () => {
                     }
 
                     const token = response.token.replace('Bearer ', '');
-                    login(response.admin, token, response.apiKey);
+                    login(response.staff, token, response.apiKey);
 
                     await new Promise((resolve) => setTimeout(resolve, 800));
 
@@ -104,7 +102,6 @@ const Login = () => {
                 success: "Login successful!",
                 error: (err) => err.message || "Invalid credentials",
             },
-            setLoggingIn(false)
         );
     };
 
@@ -226,9 +223,8 @@ const Login = () => {
                                     <Button
                                         type="submit"
                                         className="w-full mt-2 md:mt-4 bg-[#126280] hover:bg-[#126280]/80 h-10 md:h-12 text-sm md:text-base text-white"
-                                        disabled={loggingIn}
                                     >
-                                        {loggingIn ? "Logging-in..." : <>Login</>}
+                                        Login
                                     </Button>
                                 </form>
 
