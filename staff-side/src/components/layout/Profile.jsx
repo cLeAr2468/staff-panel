@@ -1,27 +1,79 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerHeader from "./CustomerHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pencil, Check, X, ArrowLeft } from "lucide-react";
+import { fetchApi } from "@/lib/api";
+import { AuthContext } from "@/context/AuthContext";
+import { toast } from "sonner";
 
-const defaultProfileDetails = [
-  { key: "fullName", label: "Full name", value: "Gabiana Angie" },
-  { key: "email", label: "Email", value: "gabiana.angie@example.com" },
-  { key: "phone", label: "Phone", value: "+63 917 123 4567" },
-  { key: "address", label: "Delivery address", value: "Unit 5C, Maple Residences, Makati City" },
-  { key: "memberSince", label: "Member since", value: "November 2022" },
-  { key: "completedOrders", label: "Completed orders", value: "46" },
-  { key: "preferredService", label: "Preferred service", value: "Regular Wash & Fold" },
-  { key: "paymentPreference", label: "Payment preference", value: "G-Cash" },
-];
+// const defaultProfileDetails = [
+//   { key: "fullName", label: "Full name", value: "Gabiana Angie" },
+//   { key: "email", label: "Email", value: "gabiana.angie@example.com" },
+//   { key: "phone", label: "Phone", value: "+63 917 123 4567" },
+//   { key: "address", label: "Delivery address", value: "Unit 5C, Maple Residences, Makati City" },
+//   { key: "memberSince", label: "Member since", value: "November 2022" },
+//   { key: "completedOrders", label: "Completed orders", value: "46" },
+//   { key: "preferredService", label: "Preferred service", value: "Regular Wash & Fold" },
+//   { key: "paymentPreference", label: "Payment preference", value: "G-Cash" },
+// ];
 
 export default function Profile() {
   const navigate = useNavigate();
-  const [details, setDetails] = useState(defaultProfileDetails);
-  const [draftDetails, setDraftDetails] = useState(defaultProfileDetails);
+  const [details, setDetails] = useState([]);
+  const [draftDetails, setDraftDetails] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const { staffData } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
+
+  const formatMemberSince = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+  };
+
+
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      try {
+        if (!staffData) return;
+
+        const res = await fetchApi(
+          `/api/auth/get-staff/${staffData.id}/${staffData.shop_id}`
+        );
+        const data = res.data;
+
+        const formattedDetails = [
+          {
+            key: "fullName",
+            label: "Full name",
+            value: `${data.user_fName} ${data.user_mName} ${data.user_lName}`,
+          },
+          { key: "email", label: "Email", value: data.email },
+          { key: "phone", label: "Phone", value: data.contactNum },
+          { key: "address", label: "Delivery address", value: data.user_address },
+          {
+            key: "memberSince",
+            label: "Member since",
+            value: formatMemberSince(data.date_registered),
+          },
+          { key: "completedOrders", label: "Completed orders", value: "0" },
+          { key: "preferredService", label: "Preferred service", value: "N/A" },
+          { key: "paymentPreference", label: "Payment preference", value: "N/A" },
+        ];
+
+        setDetails(formattedDetails);
+        setDraftDetails(formattedDetails);
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomer();
+  }, [staffData]);
 
   const startEditing = () => {
     setDraftDetails(details.map((detail) => ({ ...detail })));
@@ -33,9 +85,44 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const saveChanges = () => {
-    setDetails(draftDetails.map((detail) => ({ ...detail })));
-    setIsEditing(false);
+  const saveChanges = async () => {
+    const success = await updateStaff();
+
+    if (success) {
+      setDetails(draftDetails.map((detail) => ({ ...detail })));
+      setIsEditing(false);
+      toast.success("Profile updated successfully!")
+    } else {
+      toast.error("Failed to update profile. Please try again.");
+    }
+  };
+
+
+  const updateStaff = async () => {
+    try {
+      const payload = {
+        user_fName: draftDetails.find(d => d.key === "fullName")?.value.split(" ")[0] || "",
+        user_mName: draftDetails.find(d => d.key === "fullName")?.value.split(" ")[1] || "",
+        user_lName: draftDetails.find(d => d.key === "fullName")?.value.split(" ")[2] || "",
+        user_address: draftDetails.find(d => d.key === "address")?.value || "",
+        contactNum: draftDetails.find(d => d.key === "phone")?.value || "",
+        email: draftDetails.find(d => d.key === "email")?.value || "",
+      };
+
+      const res = await fetchApi(
+        `/api/auth/update-staff/${staffData.id}/${staffData.shop_id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Update failed:", error);
+      return false;
+    }
   };
 
   const handleInputChange = (key, value) => {
@@ -47,6 +134,9 @@ export default function Profile() {
   };
 
   const visibleDetails = isEditing ? draftDetails : details;
+
+  if (loading)
+    return <p className="text-center mt-10 text-gray-500">Loading profile...</p>;
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-10">
