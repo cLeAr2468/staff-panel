@@ -19,6 +19,7 @@ const pendingPayments = [
     service: "Wash + Fold",
     amount: "₱450",
     status: "Pending",
+    gcashReceipt: "https://via.placeholder.com/400x600/0066FF/FFFFFF?text=Gcash+Receipt+25-0015", // Has uploaded receipt
   },
   {
     id: "25-0013",
@@ -26,6 +27,7 @@ const pendingPayments = [
     service: "Premium Hand Wash",
     amount: "₱720",
     status: "Pending",
+    gcashReceipt: null, // No receipt uploaded
   },
   {
     id: "25-0011",
@@ -33,6 +35,7 @@ const pendingPayments = [
     service: "Express Wash",
     amount: "₱280",
     status: "Pending",
+    gcashReceipt: "https://via.placeholder.com/400x600/0066FF/FFFFFF?text=Gcash+Receipt+25-0011", // Has uploaded receipt
   },
   {
     id: "25-0009",
@@ -40,6 +43,7 @@ const pendingPayments = [
     service: "Dry Cleaning",
     amount: "₱350",
     status: "Pending",
+    gcashReceipt: null, // No receipt uploaded
   },
   {
     id: "25-0007",
@@ -47,6 +51,7 @@ const pendingPayments = [
     service: "Express Wash",
     amount: "₱280",
     status: "Pending",
+    gcashReceipt: "https://via.placeholder.com/400x600/0066FF/FFFFFF?text=Gcash+Receipt+25-0007", // Has uploaded receipt
   }
 ];
 

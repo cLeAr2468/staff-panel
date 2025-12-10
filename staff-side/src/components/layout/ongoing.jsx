@@ -2,17 +2,17 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, ArrowLeft, Package, CheckCircle, Clock, Phone, MapPin } from "lucide-react"
+import { Search, ArrowLeft, Package, CheckCircle, Clock, Phone, MapPin, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import CustomerHeader from "./CustomerHeader"
 
-export default function ReadyForPickup() {
+export default function Ongoing() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Sample data for ready for pickup orders
-  const [pickupOrders] = useState([
+  // Sample data for ongoing orders
+  const [ongoingOrders] = useState([
     {
       id: 1,
       orderId: "25-0001",
@@ -23,7 +23,8 @@ export default function ReadyForPickup() {
       bags: 2,
       weight: "5 kg",
       amount: 450,
-      status: "ready"
+      startDate: "2024-12-08",
+      status: "ongoing"
     },
     {
       id: 2,
@@ -35,7 +36,8 @@ export default function ReadyForPickup() {
       bags: 3,
       weight: "7.5 kg",
       amount: 850,
-      status: "ready"
+      startDate: "2024-12-08",
+      status: "ongoing"
     },
     {
       id: 3,
@@ -47,7 +49,8 @@ export default function ReadyForPickup() {
       bags: 1,
       weight: "3 kg",
       amount: 650,
-      status: "ready"
+      estimatedTime: "4 hours",
+      status: "ongoing"
     },
     {
       id: 4,
@@ -59,19 +62,20 @@ export default function ReadyForPickup() {
       bags: 2,
       weight: "6 kg",
       amount: 500,
-      status: "ready"
+      estimatedTime: "2.5 hours",
+      status: "ongoing"
     }
   ]);
 
-  const filteredOrders = pickupOrders.filter(order =>
+  const filteredOrders = ongoingOrders.filter(order =>
     order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.phone.includes(searchTerm)
   );
 
-  const handleMarkAsPickedUp = (orderId) => {
-    console.log("Mark as picked up:", orderId);
-    // Here you would update the order status
+  const handleMarkReadyForPickup = (orderId) => {
+    console.log("Mark ready for pickup:", orderId);
+    // Here you would update the order status to ready for pickup
   };
 
   return (
@@ -90,8 +94,8 @@ export default function ReadyForPickup() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">Ready for Pickup</h1>
-            <p className="text-sm text-gray-500">Orders ready for customer pickup</p>
+            <h1 className="text-2xl font-bold text-gray-900">Ongoing Orders</h1>
+            <p className="text-sm text-gray-500">Orders currently being processed</p>
           </div>
         </div>
 
@@ -100,9 +104,9 @@ export default function ReadyForPickup() {
           <CardContent className="p-6 space-y-4">
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Pickup Orders</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Processing Orders</h2>
                 <p className="text-sm text-gray-500">
-                  {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'} ready
+                  {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'} in progress
                 </p>
               </div>
               <div className="relative w-full sm:w-64">
@@ -120,7 +124,7 @@ export default function ReadyForPickup() {
             <div className="space-y-3">
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => (
-                  <Card key={order.id} className="border-l-4 border-l-emerald-500 hover:shadow-md transition">
+                  <Card key={order.id} className="border-l-4 border-l-amber-500 hover:shadow-md transition">
                     <CardContent className="p-4">
                       {/* Mobile View */}
                       <div className="lg:hidden space-y-4">
@@ -157,11 +161,11 @@ export default function ReadyForPickup() {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            onClick={() => handleMarkAsPickedUp(order.orderId)}
-                            className="w-full bg-sky-600 hover:bg-sky-700"
+                            onClick={() => handleMarkReadyForPickup(order.orderId)}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700"
                           >
                             <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
-                            Mark Picked Up
+                            Mark Ready For Pickup
                           </Button>
                         </div>
                       </div>
@@ -197,9 +201,12 @@ export default function ReadyForPickup() {
                         <div className="col-span-2 text-center">
                           <p className="text-sm font-semibold text-gray-900 flex items-center gap-1 justify-center">
                             <Clock className="h-3.5 w-3.5 text-gray-400" />
-                            {order.readyTime}
+                            {order.startTime}
                           </p>
-                          <p className="text-xs text-gray-500">{order.readyDate}</p>
+                          <p className="text-xs text-gray-500 flex items-center gap-1 justify-center mt-1">
+                            <Loader2 className="h-3 w-3 text-amber-500" />
+                            Est: {order.estimatedTime}
+                          </p>
                         </div>
 
                         <div className="col-span-2 text-right space-y-2">
@@ -207,11 +214,11 @@ export default function ReadyForPickup() {
                           <div className="flex justify-end">
                             <Button
                               size="sm"
-                              onClick={() => handleMarkAsPickedUp(order.orderId)}
-                              className="bg-sky-600 hover:bg-sky-700"
+                              onClick={() => handleMarkReadyForPickup(order.orderId)}
+                              className="bg-emerald-600 hover:bg-emerald-700"
                             >
                               <CheckCircle className="h-3 w-3 mr-1" />
-                              Mark Picked Up
+                              Ready For Pickup
                             </Button>
                           </div>
                         </div>
@@ -224,7 +231,7 @@ export default function ReadyForPickup() {
                   <Package className="h-16 w-16 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 font-medium">No orders found</p>
                   <p className="text-sm text-gray-400 mt-1">
-                    {searchTerm ? "Try adjusting your search" : "No orders ready for pickup"}
+                    {searchTerm ? "Try adjusting your search" : "No ongoing orders at the moment"}
                   </p>
                 </div>
               )}
