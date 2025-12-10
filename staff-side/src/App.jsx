@@ -20,6 +20,7 @@ import AddInventoryItem from './components/layout/AddInventoryItem';
 import ReadyForPickup from './components/layout/ReadyForPickup';
 import PublicLayout from './components/layout/PublicLayout';
 import { Toaster as SonnerToaster } from "sonner";
+import ResetPassword from './modals/ResetPassword';
 
 function AppContent() {
   const location = useLocation();
@@ -42,6 +43,7 @@ function AppContent() {
         <Route path="/:slug?/services" element={<Services />} />
         <Route path="/:slug?/prices" element={<Prices />} />
         <Route path="/:slug?/login" element={<Login />} />
+        <Route path="/:slug?/reset-password" element={<ResetPassword />} />
         <Route path="/:slug?/register" element={<Register />} />
         </Route>
         {/* Protected Routes */}
