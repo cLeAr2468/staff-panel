@@ -1,20 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ShoppingBasket, CreditCard, FileCheck, ArrowLeft } from "lucide-react"
-import { useRef, useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { ShoppingBasket, CreditCard, ArrowLeft, CheckCircle } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 import CustomerHeader from "./CustomerHeader"
+import GcashImage from "../../assets/Gcash.jpg"
 
 export default function Payment() {
   const location = useLocation();
   const navigate = useNavigate();
   const { payment, formData = {} } = location.state || {};
-
-  const [proofFile, setProofFile] = useState(null);
-  const [paymentOption, setPaymentOption] = useState("cash");
-  const fileInputRef = useRef(null);
 
   // Prepare laundry items similar to CustomerLaundryInfo
   const laundryItems = [
@@ -32,16 +28,11 @@ export default function Payment() {
     0
   );
 
-  const handleUploadClick = () => {
-    if (paymentOption !== "gcash") return;
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setProofFile(file);
-    }
+  const handleMarkAsPaid = () => {
+    console.log("Marking order as paid:", payment?.id);
+    // Here you would update the order status to paid
+    // Then navigate back or show success message
+    navigate("/dashboard/pending");
   };
 
   return (
@@ -128,56 +119,52 @@ export default function Payment() {
             </div>
 
             {/* Payment Section */}
-            <div>
-              <h3 className="font-bold flex items-center gap-2 mb-2">
-                <CreditCard className="w-5 h-5" /> PAYMENT STATUS
+            <div className="md:col-span-2">
+              <h3 className="font-bold flex items-center gap-2 mb-4 ml-24">
+                <CreditCard className="w-5 h-5" /> GCASH PAYMENT
               </h3>
-              <p className="text-green-700 font-semibold">PAID</p>
 
-              <h4 className="mt-4 font-bold">PAYMENT OPTION</h4>
-              <RadioGroup value={paymentOption} onValueChange={setPaymentOption} className="space-y-2 mt-2">
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="cash" id="cash" />
-                  <label htmlFor="cash">CASH ON PICK-UP</label>
+              {/* Gcash QR Code Image */}
+              <div className="mb-4">
+                <div className="overflow-hidden w-full max-w-sm">
+                  <img 
+                    src={payment?.gcashReceipt || GcashImage} 
+                    alt="Gcash QR Code" 
+                    className="w-full h-auto object-contain max-h-96"
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="gcash" id="gcash" />
-                  <label htmlFor="gcash">G-CASH</label>
-                </div>
-              </RadioGroup>
-
-              <div className="mt-3 sm:mt-4 border rounded-md p-2 sm:p-3 text-center space-y-2">
-                <p className="text-xs sm:text-sm flex items-center gap-1 sm:gap-2 justify-center">
-                  <FileCheck className="w-3 h-3 sm:w-4 sm:h-4" />
-                  {proofFile ? "File selected" : "Proof Uploaded"}
-                </p>
-                {proofFile && (
-                  <p className="text-xs text-gray-500 truncate">{proofFile.name}</p>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="text-xs sm:text-sm h-8 sm:h-10 px-3 sm:px-4"
-                  disabled={paymentOption !== "gcash"}
-                  onClick={handleUploadClick}
-                >
-                  {paymentOption !== "gcash" ? "Enable G-Cash to upload" : proofFile ? "Change image" : "Upload image"}
-                </Button>
-                <Button
-                  type="button"
-                  className="text-xs sm:text-sm h-8 sm:h-10 px-3 sm:px-4 bg-sky-600 text-white hover:bg-sky-700 disabled:bg-slate-300 disabled:text-slate-500"
-                  disabled={paymentOption !== "gcash" || !proofFile}
-                >
-                  Submit proof
-                </Button>
               </div>
+              
+              {payment?.gcashReceipt && (
+                <div className="mb-4">
+                  <Badge className="bg-emerald-100 text-emerald-700 text-sm px-3 py-1">
+                    Customer Receipt Uploaded
+                  </Badge>
+                </div>
+              )}
+
+              {payment?.gcashReceipt && (
+                <div className="mt-4 border-2 border-emerald-500 rounded-md p-6 bg-emerald-50 space-y-4">
+                  <div className="text-center">
+                    <CheckCircle className="w-12 h-12 text-emerald-600 mx-auto mb-3" />
+                    <h4 className="font-semibold text-gray-900 text-lg">Payment Receipt Received</h4>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Customer has uploaded their Gcash payment receipt
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      type="button"
+                      onClick={handleMarkAsPaid}
+                      className="text-sm h-12 px-8 bg-emerald-600 text-white hover:bg-emerald-700 font-semibold"
+                    >
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      Mark as Paid
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
 
