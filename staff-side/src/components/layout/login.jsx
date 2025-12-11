@@ -7,12 +7,7 @@ import { fetchApi } from "@/lib/api";
 import { AuthContext } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-
-const DEFAULT_SHOP = {
-    shop_name: 'Wash Wise Intelligence',
-    slug: 'wash-wise-intelligence',
-    shop_id: 'LMSS-00000'
-};
+import { DEFAULT_SHOP, verifySlug } from "@/lib/shop";
 
 const Login = () => {
     const [username, setUsername] = useState("");
@@ -28,38 +23,11 @@ const Login = () => {
     const [resetLoading, setResetLoading] = useState(false);
 
     useEffect(() => {
-        const verifySlug = async () => {
-            try {
-
-                if (!slug) {
-                    localStorage.removeItem('selectedShop');
-                    localStorage.removeItem('selectedShopId');
-                    setSelectedShop(DEFAULT_SHOP);
-                    return;
-                }
-
-                const response = await fetchApi(`/api/public/shop-slug/${slug}`);
-
-                if (!response.success) {
-                    localStorage.removeItem('selectedShop');
-                    localStorage.removeItem('selectedShopId');
-                    setSelectedShop(DEFAULT_SHOP);
-                    return;
-                }
-
-                localStorage.setItem('selectedShop', response.data.slug);
-                localStorage.setItem('selectedShopId', response.data.shop_id);
-                setSelectedShop(response.data);
-
-            } catch (err) {
-                console.error("Slug check failed:", err);
-                setSelectedShop(DEFAULT_SHOP);
-                localStorage.removeItem('selectedShop');
-                localStorage.removeItem('selectedShopId');
-            }
+        const load = async () => {
+            const shop = await verifySlug(slug);
+            setSelectedShop(shop);
         };
-
-        verifySlug();
+        load();
     }, [slug]);
 
     const handleLogin = async (e) => {
@@ -74,29 +42,29 @@ const Login = () => {
         }
 
         toast.promise(
-                (async () => {
-                    const response = await fetchApi('/api/public/staff/login', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            shop_id: shopIdToSend,
-                            emailOrUsername: username,
-                            password: password
-                        })
-                    });
+            (async () => {
+                const response = await fetchApi('/api/public/staff/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        shop_id: shopIdToSend,
+                        emailOrUsername: username,
+                        password: password
+                    })
+                });
 
-                    if (!response.message || !response.token) {
-                        throw new Error("Invalid response from server");
-                    }
+                if (!response.message || !response.token) {
+                    throw new Error("Invalid response from server");
+                }
 
-                    const token = response.token.replace('Bearer ', '');
-                    login(response.staff, token, response.apiKey);
+                const token = response.token.replace('Bearer ', '');
+                login(response.staff, token, response.apiKey);
 
-                    await new Promise((resolve) => setTimeout(resolve, 800));
+                await new Promise((resolve) => setTimeout(resolve, 800));
 
-                    navigate("/dashboard");
+                navigate(currentShop ? `/${currentShop.slug}/dashboard` : '/dashboard');
 
-                    return response;
-                })(),
+                return response;
+            })(),
             {
                 loading: "Logging in...",
                 success: "Login successful!",
@@ -287,7 +255,7 @@ const Login = () => {
                                 <Button
                                     type="submit"
                                     className="flex-1 bg-[#126280] hover:bg-[#126280]/80 text-white rounded-full"
-                                disabled={resetLoading}
+                                    disabled={resetLoading}
                                 >
                                     {resetLoading ? "Sending reset password link..." : <>Send Reset Link</>}
                                 </Button>
