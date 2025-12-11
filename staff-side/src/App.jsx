@@ -56,18 +56,20 @@ function AppContent() {
           <Route path="/:slug?/register" element={<Register />} />
         </Route>
         {/* Protected Routes */}
-        <Route path="/:slug?/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/dashboard/payment" element={<Payment />} />
-        <Route path="/dashboard/pending" element={<PendingRecords />} />
-        <Route path="/dashboard/pending-payments" element={<PendingPayments />} />
-        <Route path="/dashboard/insert-record" element={<InsertRecord />} />
-        <Route path="/dashboard/profile" element={<Profile />} />
-        <Route path="/dashboard/history" element={<History />} />
-        <Route path="/dashboard/Laundryinfo" element={<CustomerLaundryInfo />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/add-inventory-item" element={<AddInventoryItem />} />
-        <Route path="/ready-for-pickup" element={<ReadyForPickup />} />
-        <Route path="/ongoing" element={<Ongoing />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/:slug?/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/payment" element={<Payment />} />
+          <Route path="/dashboard/pending" element={<PendingRecords />} />
+          <Route path="/dashboard/pending-payments" element={<PendingPayments />} />
+          <Route path="/dashboard/insert-record" element={<InsertRecord />} />
+          <Route path="/dashboard/profile" element={<Profile />} />
+          <Route path="/dashboard/history" element={<History />} />
+          <Route path="/dashboard/Laundryinfo" element={<CustomerLaundryInfo />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/add-inventory-item" element={<AddInventoryItem />} />
+          <Route path="/ready-for-pickup" element={<ReadyForPickup />} />
+          <Route path="/ongoing" element={<Ongoing />} />
+        </Route>
       </Routes>
     </div>
   );
@@ -76,7 +78,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <Toaster position="top-right" richColors/>
+      <Toaster position="top-right" richColors />
       <AppContent />
     </Router>
   );
