@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShoppingBasket, CreditCard, Truck, Droplets, Clock, CheckCircle, AlertCircle, TrendingUp, BarChart3, Package } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import CustomerHeader from "./CustomerHeader"
 
@@ -66,7 +66,7 @@ export default function LaundryDashboard() {
       details: "Your order is ready! Please pick up at your earliest convenience"
     },
     {
-      id: 6,
+      id: 7,
       orderId: "25-0004",
       action: "Ready for Pick-up",
       status: "Ongoing",
@@ -116,7 +116,7 @@ export default function LaundryDashboard() {
       accent: "bg-purple-100 text-purple-700",
       path: "/inventory"
     },
-     {
+    {
       label: "Ongoing",
       value: "4 orders",
       action: "View details",
@@ -194,31 +194,31 @@ export default function LaundryDashboard() {
           {quickStats.map((stat) => {
             const isInteractive = Boolean(stat.path);
             return (
-            <Card
-              key={stat.label}
-              className={`shadow-sm ${isInteractive ? "cursor-pointer transition hover:shadow-md hover:-translate-y-0.5" : ""}`}
-              onClick={() => isInteractive && navigate(stat.path)}
-            >
-              <CardContent className="p-5 space-y-3">
-                <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${stat.accent}`}>
-                  <stat.icon className="h-4 w-4" />
-                  {stat.label}
-                </div>
-                <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
-                <button
-                  type="button"
-                  className="text-sm font-medium text-sky-600 hover:text-sky-700"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    if (stat.path) {
-                      navigate(stat.path);
-                    }
-                  }}
-                >
-                  {stat.action}
-                </button>
-              </CardContent>
-            </Card>
+              <Card
+                key={stat.label}
+                className={`shadow-sm ${isInteractive ? "cursor-pointer transition hover:shadow-md hover:-translate-y-0.5" : ""}`}
+                onClick={() => isInteractive && navigate(stat.path)}
+              >
+                <CardContent className="p-5 space-y-3">
+                  <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${stat.accent}`}>
+                    <stat.icon className="h-4 w-4" />
+                    {stat.label}
+                  </div>
+                  <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-sky-600 hover:text-sky-700"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (stat.path) {
+                        navigate(stat.path);
+                      }
+                    }}
+                  >
+                    {stat.action}
+                  </button>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
@@ -240,7 +240,7 @@ export default function LaundryDashboard() {
               <div className="flex gap-2 pb-2 min-w-min">
                 {monthlyTransactions.map((data) => {
                   const heightPercent = (data.amount / maxAmount) * 100;
-                  
+
                   return (
                     <div key={data.month} className="flex flex-col items-center gap-2 flex-shrink-0">
                       <div className="flex flex-col items-center gap-1">
@@ -292,7 +292,7 @@ export default function LaundryDashboard() {
               {activityLogs.map((log, index) => {
                 const IconComponent = log.icon;
                 const isExpanded = expandedLog === log.id;
-                
+
                 return (
                   <div
                     key={log.id}
@@ -315,11 +315,10 @@ export default function LaundryDashboard() {
                         </div>
                       </div>
                       <div className="flex-shrink-0 self-start mt-1 sm:mt-0">
-                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                          log.status === "completed" ? "bg-emerald-100 text-emerald-700" :
-                          log.status === "active" ? "bg-sky-100 text-sky-700" :
-                          "bg-amber-100 text-amber-700"
-                        }`}>
+                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${log.status === "completed" ? "bg-emerald-100 text-emerald-700" :
+                            log.status === "active" ? "bg-sky-100 text-sky-700" :
+                              "bg-amber-100 text-amber-700"
+                          }`}>
                           {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
                         </div>
                       </div>

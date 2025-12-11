@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Button } from '../ui/button.jsx';
-import { Menu, X } from 'lucide-react';
+import { ArrowBigRight, Menu, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom'; // Add this import
 import { fetchApi } from '@/lib/api.js';
+import { AuthContext } from '@/context/AuthContext.jsx';
+import { verifySlug } from '@/lib/shop.js';
 
 const DEFAULT_SHOP = {
   shop_name: 'Wash Wise Intelligence',
@@ -14,43 +16,19 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedShop, setSelectedShop] = useState(null);
   const { slug } = useParams();
+  const { staffData, token } = useContext(AuthContext);
 
   useEffect(() => {
-    const verifySlug = async () => {
-      try {
-
-        if (!slug) {
-          localStorage.removeItem('selectedShop');
-          localStorage.removeItem('selectedShopId');
-          setSelectedShop(DEFAULT_SHOP);
-          return;
-        }
-
-        const response = await fetchApi(`/api/public/shop-slug/${slug}`);
-
-        if (!response.success) {
-          localStorage.removeItem('selectedShop');
-          localStorage.removeItem('selectedShopId');
-          setSelectedShop(DEFAULT_SHOP);
-          return;
-        }
-
-        localStorage.setItem('selectedShop', response.data.slug);
-        localStorage.setItem('selectedShopId', response.data.shop_id);
-        setSelectedShop(response.data);
-
-      } catch (err) {
-        console.error("Slug check failed:", err);
-        setSelectedShop(DEFAULT_SHOP);
-        localStorage.removeItem('selectedShop');
-        localStorage.removeItem('selectedShopId');
-      }
+    const load = async () => {
+      const shop = await verifySlug(slug);
+      setSelectedShop(shop);
     };
-
-    verifySlug();
+    load();
   }, [slug]);
 
   const currentShop = selectedShop || DEFAULT_SHOP;
+  
+  const isLoggedIn = (staffData && token);
 
   return (
     <header className="bg-[#126280] p-4 text-white fixed top-0 left-0 right-0 z-50">
@@ -88,15 +66,27 @@ const Header = () => {
               </Link>
             </li>
           </ul>
-          <Link to={currentShop ? `/${currentShop.slug}/login` : '/login'}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-black border-[#126280] hover:bg-white hover:text-[#126280]"
-            >
-              LOGIN
-            </Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link to={currentShop ? `/${currentShop.slug}/dashboard` : '/dashboard'}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-black border-[#126280] hover:bg-white hover:text-[#126280]"
+              >
+                Back to Dashboard <ArrowBigRight />
+              </Button>
+            </Link>
+          ) : (
+            <Link to={currentShop ? `/${currentShop.slug}/login` : '/login'}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-black border-[#126280] hover:bg-white hover:text-[#126280]"
+              >
+                LOGIN
+              </Button>
+            </Link>
+          )}
         </nav>
 
         <div className="md:hidden">
@@ -114,15 +104,27 @@ const Header = () => {
             <li><Link to={currentShop ? `/${currentShop.slug}/services` : '/services'} className="hover:underline">SERVICES</Link></li>
             <li><Link to={currentShop ? `/${currentShop.slug}/prices` : '/prices'} className="hover:underline">PRICES</Link></li>
           </ul>
-          <Link to={currentShop ? `/${currentShop.slug}/login` : '/login'} className="w-full">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-black hover:bg-white hover:text-[#126280]"
-            >
-              LOGIN
-            </Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link to={currentShop ? `/${currentShop.slug}/dashboard` : '/dashboard'}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full border-white hover:bg-white hover:text-slate-900"
+              >
+                Back to Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Link to={currentShop ? `/${currentShop.slug}/login` : '/login'} className="w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-black hover:bg-white hover:text-[#126280]"
+              >
+                LOGIN
+              </Button>
+            </Link>
+          )}
         </div>
       )}
     </header>
