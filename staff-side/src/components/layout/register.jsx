@@ -68,7 +68,6 @@ const Register = ({ embedded = false }) => {
         e.preventDefault();
         setError("");
 
-        // Validate passwords match
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords do not match");
             return;
@@ -80,46 +79,74 @@ const Register = ({ embedded = false }) => {
             return;
         }
 
-        try {
+        const sendOtpPromise = async () => {
             setSendingOTP(true);
-            const response = await fetchApi("/api/public/send-otp", {
+            return fetchApi("/api/public/send-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: formData.email })
+            }).then(response => {
+
+                if (!response.success) {
+
+                    throw new Error(response.message || "Server rejected the request.");
+                }
+                return response;
             });
+        };
 
-            if (!response.success) throw new Error(response.message || "Something went wrong");
+        try {
+            await toast.promise(
+                sendOtpPromise(),
+                {
+                    loading: 'Sending verification code...',
+                    success: (response) => {
 
-            toast.success("OTP send successfully!")
-            setShowOTPModal(true);
-            setResendDisabled(true);
-            setResendTimer(30); // 3 mins
+                        setShowOTPModal(true);
+                        setResendDisabled(true);
+                        setResendTimer(30);
+                        return 'OTP sent successfully! Check your email.';
+                    },
+                    error: (err) => {
+
+                        console.error("API error:", err);
+                        return err.message || "Failed to send OTP. Please try again.";
+                    },
+                }
+            );
+
 
         } catch (err) {
-            console.error("API error:", err);
             toast.error(err.message || "Something went wrong");
+            console.error("Unexpected error during submission:", err);
         } finally {
             setSendingOTP(false);
         }
     };
 
     const handleOTPSubmit = async (otp) => {
-        try {
-            const verify = await fetchApi("/api/public/verify-otp", {
+        const verifyOtpPromise = async () => {
+            return fetchApi("/api/public/verify-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: formData.email, otp })
+            }).then((res) => {
+                if (!res.success) throw new Error("Invalid OTP");
+                return res;
             });
+        };
 
-            if (!verify.success) {
-                toast.error("Invalid OTP");
-                return;
-            }
-
-            toast.success("OTP verified!")
+        try {
+            await toast.promise(
+                verifyOtpPromise,
+                {
+                    loading: "Verifying OTP...",
+                    success: "OTP verified!",
+                    error: (err) => err.message || "Invalid OTP",
+                }
+            );
 
             const shopIdToSend = localStorage.getItem("selectedShopId");
-
             if (!shopIdToSend) {
                 setError("Invalid shop. Please go back to home page.");
                 return;
@@ -127,37 +154,51 @@ const Register = ({ embedded = false }) => {
 
             const formattedNumber = formatPHNumber(formData.staff_contactNum);
 
-            const response = await fetchApi('/api/public/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    shop_id: shopIdToSend,
-                    user_fName: formData.staff_fName,
-                    user_mName: formData.staff_mName,
-                    user_lName: formData.staff_lName,
-                    user_address: formData.staff_address,
-                    username: formData.staff_username,
-                    contactNum: formattedNumber,
-                    email: formData.email,
-                    role: "STAFF",
-                    status: "ACTIVE",
-                    password: formData.password,
-                    registered_by: "STAFF"
-                })
-            });
+            const registerPromise = async () => {
+                return fetchApi("/api/public/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        shop_id: shopIdToSend,
+                        user_fName: formData.staff_fName,
+                        user_mName: formData.staff_mName,
+                        user_lName: formData.staff_lName,
+                        user_address: formData.staff_address,
+                        username: formData.staff_username,
+                        contactNum: formattedNumber,
+                        email: formData.email,
+                        role: "STAFF",
+                        status: "ACTIVE",
+                        password: formData.password,
+                        registered_by: "STAFF"
+                    }),
+                }).then((res) => {
+                    if (!res.success)
+                        throw new Error(res.message || "Failed to register customer");
+                    return res;
+                });
+            };
 
-            if (response.success) {
-                navigate(currentShop ? `/${currentShop.slug}/login` : '/login');
-            } else {
-                setError(data.message || "Registration failed");
-            }
+            await toast.promise(
+                registerPromise,
+                {
+                    loading: "Registering account...",
+                    success: "Customer registered successfully!",
+                    error: (err) => err.message || "Registration failed",
+                }
+            );
+
+            setTimeout(() => {
+                navigate(currentShop ? `/${currentShop.slug}/login` : "/login");
+            }, 1500);
+
         } catch (error) {
-            console.error("Registration error:", error);
-            setError("Connection error. Please try again later.");
+            console.error("API error:", error);
+            setOtpResetKey((prev) => prev + 1);
+            setShowOTPModal(false);
+            toast.error(error.message || "Something went wrong");
         }
-    }
+    };
 
     const handleResendOTP = async () => {
         try {
