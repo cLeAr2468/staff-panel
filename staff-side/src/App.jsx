@@ -56,20 +56,18 @@ function AppContent() {
           <Route path="/:slug?/register" element={<Register />} />
         </Route>
         {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/:slug?/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/payment" element={<Payment />} />
-          <Route path="/dashboard/pending" element={<PendingRecords />} />
-          <Route path="/dashboard/pending-payments" element={<PendingPayments />} />
-          <Route path="/dashboard/insert-record" element={<InsertRecord />} />
-          <Route path="/dashboard/profile" element={<Profile />} />
-          <Route path="/dashboard/history" element={<History />} />
-          <Route path="/dashboard/Laundryinfo" element={<CustomerLaundryInfo />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/add-inventory-item" element={<AddInventoryItem />} />
-          <Route path="/ready-for-pickup" element={<ReadyForPickup />} />
-          <Route path="/ongoing" element={<Ongoing />} />
-        </Route>
+        <Route path="/:slug?/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+        <Route path="/dashboard/pending" element={<ProtectedRoute><PendingRecords /></ProtectedRoute>} />
+        <Route path="/dashboard/pending-payments" element={<ProtectedRoute><PendingPayments /></ProtectedRoute>} />
+        <Route path="/dashboard/insert-record" element={<ProtectedRoute><InsertRecord /></ProtectedRoute>} />
+        <Route path="/dashboard/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/dashboard/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path="/dashboard/Laundryinfo" element={<ProtectedRoute><CustomerLaundryInfo /></ProtectedRoute>} />
+        <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+        <Route path="/add-inventory-item" element={<ProtectedRoute><AddInventoryItem /></ProtectedRoute>} />
+        <Route path="/ready-for-pickup" element={<ProtectedRoute><ReadyForPickup /></ProtectedRoute>} />
+        <Route path="/ongoing" element={<ProtectedRoute><Ongoing /></ProtectedRoute>} />
       </Routes>
     </div>
   );

@@ -4,13 +4,7 @@ import { ArrowBigRight, Menu, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom'; // Add this import
 import { fetchApi } from '@/lib/api.js';
 import { AuthContext } from '@/context/AuthContext.jsx';
-import { verifySlug } from '@/lib/shop.js';
-
-const DEFAULT_SHOP = {
-  shop_name: 'Wash Wise Intelligence',
-  slug: 'wash-wise-intelligence',
-  shop_id: 'LMSS-00000'
-};
+import { DEFAULT_SHOP, verifySlug } from '@/lib/shop.js';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -109,9 +103,9 @@ const Header = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full border-white hover:bg-white hover:text-slate-900"
+                className="w-full text-black hover:bg-white hover:text-[#126280]"
               >
-                Back to Dashboard
+                Back to Dashboard<ArrowBigRight />
               </Button>
             </Link>
           ) : (
