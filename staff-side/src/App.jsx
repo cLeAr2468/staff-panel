@@ -18,15 +18,25 @@ import CustomerLaundryInfo from './components/layout/CustomerLaundryInfo';
 import Inventory from './components/layout/Inventory';
 import AddInventoryItem from './components/layout/AddInventoryItem';
 import ReadyForPickup from './components/layout/ReadyForPickup';
+import Ongoing from './components/layout/ongoing';
+import PublicLayout from './components/layout/PublicLayout';
+import { Toaster as SonnerToaster } from "sonner";
+import ResetPassword from './modals/ResetPassword';
 
 function AppContent() {
   const location = useLocation();
 
   const exactHideRoutes = ['/register', '/login'];
-  const prefixHideRoutes = ['/dashboard', '/inventory', '/add-inventory-item', '/ready-for-pickup'];
+  const prefixHideRoutes = ['/dashboard', '/inventory', '/add-inventory-item', '/ready-for-pickup', '/ongoing'];
+  
+  // Check if path ends with /login, /register, or /reset-password (handles slug-based routes)
+  const endsWithAuthRoute = location.pathname.endsWith('/login') || 
+                            location.pathname.endsWith('/register') || 
+                            location.pathname.endsWith('/reset-password');
 
   const shouldHideHeader =
     exactHideRoutes.includes(location.pathname) ||
+    endsWithAuthRoute ||
     prefixHideRoutes.some((route) => location.pathname.startsWith(route));
 
   return (
@@ -34,12 +44,15 @@ function AppContent() {
       {!shouldHideHeader && <Header />}
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/prices" element={<Prices />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route element={<PublicLayout />}>
+        <Route path="/:slug?" element={<Home />} />
+        <Route path="/:slug?/about" element={<About />} />
+        <Route path="/:slug?/services" element={<Services />} />
+        <Route path="/:slug?/prices" element={<Prices />} />
+        <Route path="/:slug?/login" element={<Login />} />
+        <Route path="/:slug?/reset-password" element={<ResetPassword />} />
+        <Route path="/:slug?/register" element={<Register />} />
+        </Route>
         {/* Protected Routes */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/payment" element={<Payment />} />
@@ -52,6 +65,7 @@ function AppContent() {
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/add-inventory-item" element={<AddInventoryItem />} />
         <Route path="/ready-for-pickup" element={<ReadyForPickup />} />
+        <Route path="/ongoing" element={<Ongoing />} />
       </Routes>
     </div>
   );
@@ -60,6 +74,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <SonnerToaster position="top-right" richColors />
       <AppContent />
     </Router>
   );

@@ -1,23 +1,92 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
+import { fetchApi } from "@/lib/api";
+import { formatPHNumber } from "@/lib/phoneFormatter";
+import OTPModal from "@/modals/OTPmodal";
+import { toast } from "sonner";
+
+const DEFAULT_SHOP = {
+    shop_name: 'Wash Wise Intelligence',
+    slug: 'wash-wise-intelligence',
+    shop_id: 'LMSS-00000'
+};
 
 const Register = ({ embedded = false }) => {
     const navigate = useNavigate();
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
-        admin_fName: "",
-        admin_mName: "",
-        admin_lName: "",
-        admin_address: "",
-        admin_username: "",
-        admin_contactNum: "",
+        staff_fName: "",
+        staff_mName: "",
+        staff_lName: "",
+        staff_address: "",
+        staff_username: "",
+        staff_contactNum: "",
         email: "",
         password: "",
         confirmPassword: ""
     });
+    const [selectedShop, setSelectedShop] = useState(null);
+    const { slug } = useParams();
+    // OTP Modal state
+    const [showOTPModal, setShowOTPModal] = useState(false);
+    const [resendDisabled, setResendDisabled] = useState(false);
+    const [resendTimer, setResendTimer] = useState(0);
+    const [sendingOTP, setSendingOTP] = useState(false);
+    const [otpResetKey, setOtpResetKey] = useState(0);
+
+    useEffect(() => {
+        const verifySlug = async () => {
+            try {
+
+                if (!slug) {
+                    localStorage.removeItem('selectedShop');
+                    localStorage.removeItem('selectedShopId');
+                    setSelectedShop(DEFAULT_SHOP);
+                    return;
+                }
+
+                const response = await fetchApi(`/api/public/shop-slug/${slug}`);
+
+                if (!response.success) {
+                    localStorage.removeItem('selectedShop');
+                    localStorage.removeItem('selectedShopId');
+                    setSelectedShop(DEFAULT_SHOP);
+                    return;
+                }
+
+                localStorage.setItem('selectedShop', response.data.slug);
+                localStorage.setItem('selectedShopId', response.data.shop_id);
+                setSelectedShop(response.data);
+
+            } catch (err) {
+                console.error("Slug check failed:", err);
+                setSelectedShop(DEFAULT_SHOP);
+                localStorage.removeItem('selectedShop');
+                localStorage.removeItem('selectedShopId');
+            }
+        };
+
+        verifySlug();
+    }, [slug]);
+
+    const currentShop = selectedShop || DEFAULT_SHOP;
+
+    useEffect(() => {
+        let interval;
+
+        if (resendDisabled && resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer(prev => prev - 1);
+            }, 1000);
+        } else if (resendDisabled && resendTimer === 0) {
+            setResendDisabled(false); // enable button when timer reaches 0
+        }
+
+        return () => clearInterval(interval);
+    }, [resendDisabled, resendTimer]);
 
     const handleChange = (e) => {
         const { id, value } = e.target;
@@ -37,34 +106,110 @@ const Register = ({ embedded = false }) => {
             return;
         }
 
+        const formattedNumber = formatPHNumber(formData.staff_contactNum);
+        if (!formattedNumber) {
+            toast.error("Invalid Philippine phone number!");
+            return;
+        }
+
         try {
-            const response = await fetch('http://localhost:3000/api/auth/register-admin', {
+            setSendingOTP(true);
+            const response = await fetchApi("/api/public/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: formData.email })
+            });
+
+            if (!response.success) throw new Error(response.message || "Something went wrong");
+
+            toast.success("OTP send successfully!")
+            setShowOTPModal(true);
+            setResendDisabled(true);
+            setResendTimer(30); // 3 mins
+
+        } catch (err) {
+            console.error("API error:", err);
+            toast.error(err.message || "Something went wrong");
+        } finally {
+            setSendingOTP(false);
+        }
+    };
+
+    const handleOTPSubmit = async (otp) => {
+        try {
+            const verify = await fetchApi("/api/public/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: formData.email, otp })
+            });
+
+            if (!verify.success) {
+                toast.error("Invalid OTP");
+                return;
+            }
+
+            toast.success("OTP verified!")
+
+            const shopIdToSend = localStorage.getItem("selectedShopId");
+
+            if (!shopIdToSend) {
+                setError("Invalid shop. Please go back to home page.");
+                return;
+            }
+
+            const formattedNumber = formatPHNumber(formData.staff_contactNum);
+
+            const response = await fetchApi('/api/public/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    admin_fName: formData.admin_fName,
-                    admin_mName: formData.admin_mName,
-                    admin_lName: formData.admin_lName,
-                    admin_address: formData.admin_address,
-                    admin_username: formData.admin_username,
-                    admin_contactNum: formData.admin_contactNum,
+                    shop_id: shopIdToSend,
+                    user_fName: formData.staff_fName,
+                    user_mName: formData.staff_mName,
+                    user_lName: formData.staff_lName,
+                    user_address: formData.staff_address,
+                    username: formData.staff_username,
+                    contactNum: formattedNumber,
                     email: formData.email,
-                    password: formData.password
+                    role: "STAFF",
+                    status: "ACTIVE",
+                    password: formData.password,
+                    registered_by: "STAFF"
                 })
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                navigate("/dashboard");
+            if (response.success) {
+                navigate(currentShop ? `/${currentShop.slug}/login` : '/login');
             } else {
                 setError(data.message || "Registration failed");
             }
         } catch (error) {
             console.error("Registration error:", error);
             setError("Connection error. Please try again later.");
+        }
+    }
+
+    const handleResendOTP = async () => {
+        try {
+            setResendDisabled(true);
+            setResendTimer(30);
+            toast("Resending OTP...");
+
+            const response = await fetchApi("/api/auth/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: formData.email })
+            });
+
+            if (!response.success) throw new Error(response.message || "Failed to resend OTP");
+
+            toast.success("OTP resent successfully!");
+        } catch (err) {
+            console.error(err);
+            toast.error(err.message || "Failed to resend OTP");
+            setResendDisabled(false);
         }
     };
 
@@ -101,10 +246,10 @@ const Register = ({ embedded = false }) => {
                                     <div className="space-y-2 flex-1 w-full">
 
                                         <Input
-                                            id="admin_fName"
+                                            id="staff_fName"
                                             type="text"
                                             placeholder="First name"
-                                            value={formData.admin_fName}
+                                            value={formData.staff_fName}
                                             onChange={handleChange}
                                             className="w-full bg-gray-300 rounded-full border border-[#126280]/30 focus:outline-none focus:ring-2 focus:ring-[#126280]/50 text-sm md:text-base h-10 md:h-12"
                                             required
@@ -113,10 +258,10 @@ const Register = ({ embedded = false }) => {
                                     <div className="space-y-2 flex-1 w-full">
 
                                         <Input
-                                            id="admin_mName"
+                                            id="staff_mName"
                                             type="text"
                                             placeholder="Middle name"
-                                            value={formData.admin_mName}
+                                            value={formData.staff_mName}
                                             onChange={handleChange}
                                             className="w-full bg-gray-300 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base h-10 md:h-12"
                                         />
@@ -124,10 +269,10 @@ const Register = ({ embedded = false }) => {
                                     <div className="space-y-2 flex-1 w-full">
 
                                         <Input
-                                            id="admin_lName"
+                                            id="staff_lName"
                                             type="text"
                                             placeholder="Last name"
-                                            value={formData.admin_lName}
+                                            value={formData.staff_lName}
                                             onChange={handleChange}
                                             className="w-full bg-gray-300 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base h-10 md:h-12"
                                             required
@@ -139,10 +284,10 @@ const Register = ({ embedded = false }) => {
                                 <div className="mb-4">
 
                                     <Input
-                                        id="admin_address"
+                                        id="staff_address"
                                         type="text"
                                         placeholder="Address"
-                                        value={formData.admin_address}
+                                        value={formData.staff_address}
                                         onChange={handleChange}
                                         className="bg-gray-300 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base h-10 md:h-12"
                                     />
@@ -165,13 +310,13 @@ const Register = ({ embedded = false }) => {
                                     <div className="space-y-2 w-full">
 
                                         <Input
-                                            id="admin_contactNum"
+                                            id="staff_contactNum"
                                             type="tel"
                                             placeholder="09XXXXXXXXX"
                                             pattern="^09\d{9}$"
                                             inputMode="numeric"
                                             maxLength={11}
-                                            value={formData.admin_contactNum}
+                                            value={formData.staff_contactNum}
                                             onChange={handleChange}
                                             className="bg-gray-300 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base h-10 md:h-12"
                                             onInput={e => {
@@ -192,10 +337,10 @@ const Register = ({ embedded = false }) => {
                                     <div className="space-y-2 w-full">
 
                                         <Input
-                                            id="admin_username"
+                                            id="staff_username"
                                             type="text"
                                             placeholder="Username"
-                                            value={formData.admin_username}
+                                            value={formData.staff_username}
                                             onChange={handleChange}
                                             className="bg-gray-300 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base h-10 md:h-12"
                                             required
@@ -227,18 +372,19 @@ const Register = ({ embedded = false }) => {
                                     </div>
                                 </div>
 
-                                <Button 
+                                <Button
                                     type="submit"
                                     className="w-full mt-6 bg-[#126280] hover:bg-[#126280]/80 h-10 md:h-12 text-sm md:text-base text-white rounded-full font-semibold"
+                                    disabled={sendingOTP}
                                 >
-                                    Register User
-                                </Button>         
+                                    {sendingOTP ? "Sending OTP..." : <>Register User</>}
+                                </Button>
                             </form>
-                            
+
                             {!embedded && (
                                 <p className="text-sm md:text-md text-center text-gray-600 mt-2 md:mt-4">
                                     Already have an account?{" "}
-                                    <Link to="/login" className="text-blue-600 font-semibold hover:underline text-lg">
+                                    <Link to={currentShop ? `/${currentShop.slug}/login` : '/login'} className="text-blue-600 font-semibold hover:underline text-lg">
                                         Login here
                                     </Link>
                                 </p>
@@ -247,6 +393,19 @@ const Register = ({ embedded = false }) => {
                     </div>
                 </div>
             </div>
+            {/* OTP Modal */}
+            <OTPModal
+                open={showOTPModal}
+                onClose={() => {
+                    setOtpResetKey(prev => prev + 1);
+                    setShowOTPModal(false);
+                }}
+                onSubmit={handleOTPSubmit}
+                onResend={handleResendOTP}
+                resendDisabled={resendDisabled}
+                resendTimer={resendTimer}
+                resetTrigger={otpResetKey}
+            />
         </div>
     );
 };

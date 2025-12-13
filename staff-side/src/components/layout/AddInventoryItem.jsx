@@ -84,8 +84,6 @@ export default function AddInventoryItem() {
     navigate("/inventory");
   };
 
-  const totalAmount = (Number(formData.price) || 0) * (Number(formData.quantity) || 0);
-
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-4xl space-y-6">
@@ -255,41 +253,6 @@ export default function AddInventoryItem() {
                   {errors.lastRestocked && (
                     <p className="text-xs text-red-500 mt-1">{errors.lastRestocked}</p>
                   )}
-                </div>
-              </div>
-
-              {/* Summary Section */}
-              <div className="border-t border-slate-200 pt-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">Summary</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Quantity</p>
-                    <p className="font-semibold text-gray-900">
-                      {formData.quantity || 0} {formData.unit || 'units'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Unit Price</p>
-                    <p className="font-semibold text-gray-900">
-                      ₱{Number(formData.price || 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Total Amount</p>
-                    <p className="font-semibold text-sky-700 text-lg">
-                      ₱{totalAmount.toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Status</p>
-                    <p className="font-semibold text-gray-900">
-                      {formData.quantity === "" || formData.quantity === "0" 
-                        ? "Out of Stock"
-                        : Number(formData.quantity) <= Number(formData.reorderLevel || 0)
-                        ? "Low Stock"
-                        : "In Stock"}
-                    </p>
-                  </div>
                 </div>
               </div>
 

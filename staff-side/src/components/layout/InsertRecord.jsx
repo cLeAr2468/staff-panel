@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ChevronDown, ArrowLeft } from "lucide-react";
+import { Search, ChevronDown, ArrowLeft, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
 import CustomerHeader from "./CustomerHeader";
 
 const InsertRecord = () => {
   const navigate = useNavigate();
-  const [laundryId, setLaundryId] = useState(null);
   const [formData, setFormData] = useState({
     cus_id: '',
     name: '',
@@ -26,9 +24,84 @@ const InsertRecord = () => {
     bedSheets: '',
     kl: '',
     washing: true,
+    payNow: false,
+    payLater: false,
     totalAmount: "0.00",
     itemCount: "0",
   });
+
+  // Inventory data from Inventory.jsx
+  const inventoryItems = [
+    {
+      id: 1,
+      name: "Detergent Premium",
+      category: "Cleaning Supplies",
+      quantity: 45,
+      unit: "liters",
+      price: 350,
+    },
+    {
+      id: 2,
+      name: "Fabric Softener",
+      category: "Cleaning Supplies",
+      quantity: 32,
+      unit: "liters",
+      price: 280,
+    },
+    {
+      id: 3,
+      name: "Bleach",
+      category: "Cleaning Supplies",
+      quantity: 8,
+      unit: "liters",
+      price: 220,
+    },
+    {
+      id: 4,
+      name: "Starch Spray",
+      category: "Finishing",
+      quantity: 15,
+      unit: "bottles",
+      price: 180,
+    },
+    {
+      id: 5,
+      name: "Oxygen Cleaner",
+      category: "Cleaning Supplies",
+      quantity: 0,
+      unit: "kg",
+      price: 450,
+    },
+    {
+      id: 6,
+      name: "Dryer Sheets",
+      category: "Drying",
+      quantity: 120,
+      unit: "sheets",
+      price: 95,
+    },
+    {
+      id: 7,
+      name: "Perfume Enhancer",
+      category: "Finishing",
+      quantity: 22,
+      unit: "bottles",
+      price: 320,
+    },
+    {
+      id: 8,
+      name: "Laundry Bags",
+      category: "Supplies",
+      quantity: 5,
+      unit: "boxes",
+      price: 1200,
+    }
+  ];
+
+  // Inventory search and selection states
+  const [inventorySearchQuery, setInventorySearchQuery] = useState("");
+  const [filteredInventory, setFilteredInventory] = useState([]);
+  const [selectedInventoryItems, setSelectedInventoryItems] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const customers = [
@@ -49,17 +122,13 @@ const InsertRecord = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-    
     if (name === 'cus_id' && value.trim() !== '') {
       const customerData = fetchCustomerData(value);
       
       if (customerData) {
         setFormData(prev => ({
           ...prev,
+          cus_id: value,
           name: `${customerData.cus_fName} ${customerData.cus_lName}`,
           cus_phoneNum: customerData.cus_phoneNum || '',
           cus_address: customerData.cus_address || ''
@@ -67,11 +136,31 @@ const InsertRecord = () => {
       } else {
         setFormData(prev => ({
           ...prev,
+          cus_id: value,
           name: '',
           cus_phoneNum: '',
           cus_address: ''
         }));
       }
+      return;
+    }
+
+    // Handle payment checkboxes - only one can be selected at a time
+    if (name === 'payNow' && checked) {
+      setFormData(prev => ({
+        ...prev,
+        payNow: true,
+        payLater: false,
+      }));
+      return;
+    }
+
+    if (name === 'payLater' && checked) {
+      setFormData(prev => ({
+        ...prev,
+        payNow: false,
+        payLater: true,
+      }));
       return;
     }
 
@@ -98,7 +187,7 @@ const InsertRecord = () => {
   };
 
   const calculateTotal = () => {
-    const items = [
+    const laundryItems = [
       "shirts",
       "pants",
       "jeans",
@@ -108,22 +197,50 @@ const InsertRecord = () => {
       "bedSheets",
     ];
 
-    let total = 0;
-    let count = 0;
+    let laundryTotal = 0;
+    let laundryCount = 0;
 
-    items.forEach((item) => {
+    // Calculate laundry items total
+    laundryItems.forEach((item) => {
       const quantity = parseInt(formData[item]) || 0;
       const price = getItemPrice(item);
-      total += quantity * price;
-      count += quantity;
+      laundryTotal += quantity * price;
+      laundryCount += quantity;
     });
+
+    // Calculate inventory items total
+    let inventoryTotal = 0;
+    let inventoryCount = 0;
+    selectedInventoryItems.forEach((item) => {
+      const quantity = parseInt(item.usedQuantity) || 0;
+      inventoryTotal += item.price * quantity;
+      inventoryCount += quantity;
+    });
+
+    // Combine totals
+    const grandTotal = laundryTotal + inventoryTotal;
+    const totalCount = laundryCount + inventoryCount;
 
     setFormData((prev) => ({
       ...prev,
-      totalAmount: total.toFixed(2),
-      itemCount: count.toString(),
+      totalAmount: grandTotal.toFixed(2),
+      itemCount: totalCount.toString(),
     }));
   };
+
+  // Recalculate total whenever laundry items or inventory items change
+  useEffect(() => {
+    calculateTotal();
+  }, [
+    formData.shirts,
+    formData.pants,
+    formData.jeans,
+    formData.shorts,
+    formData.towel,
+    formData.pillowCase,
+    formData.bedSheets,
+    selectedInventoryItems
+  ]);
 
   const getItemPrice = (item) => {
     const prices = {
@@ -138,9 +255,49 @@ const InsertRecord = () => {
     return prices[item] || 0;
   };
 
+  // Inventory search handler
+  const handleInventorySearch = (query) => {
+    setInventorySearchQuery(query);
+    if (!query.trim()) {
+      setFilteredInventory([]);
+      return;
+    }
+
+    const searchTerm = query.toLowerCase();
+    const filtered = inventoryItems.filter(
+      (item) =>
+        item.id.toString().includes(searchTerm) ||
+        item.name.toLowerCase().includes(searchTerm)
+    );
+    setFilteredInventory(filtered);
+  };
+
+  // Add inventory item to selected list
+  const handleInventorySelect = (item) => {
+    const exists = selectedInventoryItems.find(i => i.id === item.id);
+    if (!exists) {
+      setSelectedInventoryItems([...selectedInventoryItems, { ...item, usedQuantity: 1 }]);
+    }
+    setInventorySearchQuery("");
+    setFilteredInventory([]);
+  };
+
+  // Update quantity for selected inventory item
+  const handleInventoryQuantityChange = (itemId, quantity) => {
+    setSelectedInventoryItems(items =>
+      items.map(item =>
+        item.id === itemId ? { ...item, usedQuantity: Math.max(0, parseInt(quantity) || 0) } : item
+      )
+    );
+  };
+
+  // Remove inventory item from selected list
+  const handleRemoveInventoryItem = (itemId) => {
+    setSelectedInventoryItems(items => items.filter(item => item.id !== itemId));
+  };
+
   const submitLaundryRecord = () => {
     const newLaundryId = `LR${Date.now()}`;
-    setLaundryId(newLaundryId);
     console.log('Laundry record submitted:', {
       cus_id: formData.cus_id,
       batch: formData.batch,
@@ -155,18 +312,14 @@ const InsertRecord = () => {
       kg: formData.kl,
       num_items: parseInt(formData.itemCount) || 0,
       total_amount: parseFloat(formData.totalAmount) || 0,
-      laundryId: newLaundryId
+      laundryId: newLaundryId,
+      inventoryUsed: selectedInventoryItems
     });
     navigate('/dashboard/pending');
   };
 
   const handleSubmit = () => {
-    calculateTotal();
     submitLaundryRecord();
-  };
-
-  const fetchCustomers = () => {
-    setFilteredCustomers(customers);
   };
 
   const handleSearch = (query) => {
@@ -418,25 +571,190 @@ const InsertRecord = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="washing"
-                checked={formData.washing}
-                onChange={handleInputChange}
-                className="mr-2 h-4 w-4 text-slate-600"
-              />
-              <label className="text-xs sm:text-sm font-semibold text-slate-800">
-                WASHING
-              </label>
+          <div className="space-y-6 border-t pt-6">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-lg font-semibold text-gray-900">Inventory Items Used</h3>
+              <p className="text-sm text-gray-500">Search and add inventory items used for this order</p>
             </div>
-            <div className="text-left sm:text-right">
-              <div className="text-base sm:text-lg font-semibold text-slate-800">
-                TOTAL AMOUNT: ₱{formData.totalAmount}
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4 sm:h-5 sm:w-5" />
+              <Input
+                value={inventorySearchQuery}
+                onChange={(e) => handleInventorySearch(e.target.value)}
+                placeholder="Search inventory by ID or name..."
+                className="pl-10 bg-slate-50 border-slate-200 rounded-lg text-sm sm:text-base"
+              />
+            </div>
+
+            {inventorySearchQuery && filteredInventory.length > 0 && (
+              <div className="max-h-60 overflow-y-auto border rounded-lg bg-white shadow-sm">
+                <table className="w-full">
+                  <thead className="bg-slate-50 sticky top-0">
+                    <tr>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-slate-600">
+                        ID
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-slate-600">
+                        Name
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-slate-600">
+                        Available
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-slate-600">
+                        Price
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredInventory.map((item) => (
+                      <tr
+                        key={item.id}
+                        onClick={() => handleInventorySelect(item)}
+                        className="hover:bg-slate-50 cursor-pointer transition-colors border-t"
+                      >
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-slate-800">
+                          {item.id}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-slate-800">
+                          {item.name}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-slate-600">
+                          {item.quantity} {item.unit}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-slate-800">
+                          ₱{item.price.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="text-base sm:text-lg font-semibold text-slate-800">
-                #ITEMS: {formData.itemCount}
+            )}
+
+            {selectedInventoryItems.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">Selected Items:</h4>
+                {selectedInventoryItems.map((item) => (
+                  <div key={item.id} className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                      <div className="sm:col-span-4">
+                        <label className="text-xs font-medium text-gray-600 block mb-1">Item Name</label>
+                        <Input
+                          value={item.name}
+                          readOnly
+                          className="bg-white border-slate-300 text-slate-900 text-sm"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-xs font-medium text-gray-600 block mb-1">Quantity Used</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max={item.quantity}
+                          value={item.usedQuantity}
+                          onChange={(e) => handleInventoryQuantityChange(item.id, e.target.value)}
+                          className="bg-white border-slate-300 text-slate-900 text-sm"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-xs font-medium text-gray-600 block mb-1">Available</label>
+                        <div className="text-sm text-slate-600 py-2">
+                          {item.quantity} {item.unit}
+                        </div>
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="text-xs font-medium text-gray-600 block mb-1">Price per Unit</label>
+                        <Input
+                          value={`₱${item.price.toLocaleString()}`}
+                          readOnly
+                          className="bg-white border-slate-300 text-red-600 font-semibold text-sm cursor-not-allowed"
+                        />
+                      </div>
+                      <div className="sm:col-span-1 flex items-end justify-center sm:justify-end">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveInventoryItem(item.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 w-9"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-slate-300">
+                      <div className="text-sm font-semibold text-gray-700">
+                        Subtotal: <span className="text-sky-700">₱{(item.price * item.usedQuantity).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t pt-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="washing"
+                    checked={formData.washing}
+                    onChange={handleInputChange}
+                    className="mr-2 h-4 w-4 text-slate-600 cursor-pointer"
+                  />
+                  <label className="text-xs sm:text-sm font-semibold text-slate-800 cursor-pointer">
+                    WASHING
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="payNow"
+                    checked={formData.payNow}
+                    onChange={handleInputChange}
+                    className="mr-2 h-4 w-4 text-green-600 cursor-pointer"
+                  />
+                  <label className="text-xs sm:text-sm font-semibold text-green-700 cursor-pointer">
+                    PAY NOW
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="payLater"
+                    checked={formData.payLater}
+                    onChange={handleInputChange}
+                    className="mr-2 h-4 w-4 text-amber-600 cursor-pointer"
+                  />
+                  <label className="text-xs sm:text-sm font-semibold text-amber-700 cursor-pointer">
+                    PAY LATER
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-100 rounded-lg p-4 border-2 border-slate-300">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <div className="text-left">
+                  <div className="text-base sm:text-lg font-bold text-slate-900">
+                    TOTAL AMOUNT: <span className="text-sky-700">₱{formData.totalAmount}</span>
+                  </div>
+                  <div className="text-sm sm:text-base font-semibold text-slate-700">
+                    Total Items: {formData.itemCount}
+                  </div>
+                </div>
+                {formData.payNow && (
+                  <div className="bg-green-100 text-green-800 px-3 py-1 rounded-md text-xs font-semibold">
+                    Payment: PAID
+                  </div>
+                )}
+                {formData.payLater && (
+                  <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-md text-xs font-semibold">
+                    Payment: PENDING
+                  </div>
+                )}
               </div>
             </div>
           </div>

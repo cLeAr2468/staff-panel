@@ -64,6 +64,14 @@ export default function LaundryDashboard() {
       status: "pending",
       icon: CheckCircle,
       details: "Your order is ready! Please pick up at your earliest convenience"
+    },
+    {
+      id: 6,
+      orderId: "25-0004",
+      action: "Ready for Pick-up",
+      status: "Ongoing",
+      icon: CheckCircle,
+      details: "Your order is ready! Please pick up at your earliest convenience"
     }
   ];
 
@@ -85,7 +93,7 @@ export default function LaundryDashboard() {
       path: "/dashboard/pending-payments"
     },
     {
-      label: "Pending",
+      label: "Pending Laundry",
       value: "2 bags",
       action: "View details",
       icon: Truck,
@@ -107,6 +115,14 @@ export default function LaundryDashboard() {
       icon: Package,
       accent: "bg-purple-100 text-purple-700",
       path: "/inventory"
+    },
+     {
+      label: "On Process",
+      value: "4 Bags",
+      action: "View details",
+      icon: Clock,
+      accent: "bg-amber-100 text-amber-700",
+      path: "/ongoing"
     }
   ];
 
@@ -174,7 +190,7 @@ export default function LaundryDashboard() {
       <div className="mx-auto max-w-6xl space-y-6">
         <CustomerHeader />
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {quickStats.map((stat) => {
             const isInteractive = Boolean(stat.path);
             return (
