@@ -93,7 +93,7 @@ export default function LaundryDashboard() {
       path: "/dashboard/pending-payments"
     },
     {
-      label: "Pending",
+      label: "Pending Laundry",
       value: "2 bags",
       action: "View details",
       icon: Truck,
@@ -117,8 +117,8 @@ export default function LaundryDashboard() {
       path: "/inventory"
     },
      {
-      label: "Ongoing",
-      value: "4 orders",
+      label: "On Process",
+      value: "4 Bags",
       action: "View details",
       icon: Clock,
       accent: "bg-amber-100 text-amber-700",

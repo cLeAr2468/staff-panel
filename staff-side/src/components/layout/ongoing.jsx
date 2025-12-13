@@ -199,14 +199,7 @@ export default function Ongoing() {
                         </div>
 
                         <div className="col-span-2 text-center">
-                          <p className="text-sm font-semibold text-gray-900 flex items-center gap-1 justify-center">
-                            <Clock className="h-3.5 w-3.5 text-gray-400" />
-                            {order.startTime}
-                          </p>
-                          <p className="text-xs text-gray-500 flex items-center gap-1 justify-center mt-1">
-                            <Loader2 className="h-3 w-3 text-amber-500" />
-                            Est: {order.estimatedTime}
-                          </p>
+                          
                         </div>
 
                         <div className="col-span-2 text-right space-y-2">
