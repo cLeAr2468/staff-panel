@@ -69,7 +69,7 @@ export default function LaundryDashboard() {
       id: 7,
       orderId: "25-0004",
       action: "Ready for Pick-up",
-      status: "Ongoing",
+      status: "On Process",
       icon: CheckCircle,
       details: "Your order is ready! Please pick up at your earliest convenience"
     }
@@ -93,7 +93,7 @@ export default function LaundryDashboard() {
       path: "/dashboard/pending-payments"
     },
     {
-      label: "Pending",
+      label: "Pending Laundry",
       value: "2 bags",
       action: "View details",
       icon: Truck,
@@ -117,7 +117,7 @@ export default function LaundryDashboard() {
       path: "/inventory"
     },
     {
-      label: "Ongoing",
+      label: "On Process",
       value: "4 orders",
       action: "View details",
       icon: Clock,

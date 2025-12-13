@@ -195,11 +195,9 @@ export default function ReadyForPickup() {
                         </div>
 
                         <div className="col-span-2 text-center">
-                          <p className="text-sm font-semibold text-gray-900 flex items-center gap-1 justify-center">
-                            <Clock className="h-3.5 w-3.5 text-gray-400" />
-                            {order.readyTime}
-                          </p>
-                          <p className="text-xs text-gray-500">{order.readyDate}</p>
+                          <Badge variant="outline" className="text-sm text-sky-700">
+                            Ready for Pickup
+                          </Badge>
                         </div>
 
                         <div className="col-span-2 text-right space-y-2">
