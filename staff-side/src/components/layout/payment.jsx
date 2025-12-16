@@ -32,7 +32,7 @@ export default function Payment() {
     console.log("Marking order as paid:", payment?.id);
     // Here you would update the order status to paid
     // Then navigate back or show success message
-    navigate("/dashboard/pending");
+    navigate("/dashboard/pending-payments");
   };
 
   return (
