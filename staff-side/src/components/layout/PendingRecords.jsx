@@ -141,7 +141,7 @@ export default function PendingRecords() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Pending Records</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Pending Laundry Records</h1>
             <p className="text-sm text-gray-500">Monitor wash cycles</p>
           </div>
         </div>
